@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from air-quality-project!")
+    print("This is my Berlin Air quality project!")
