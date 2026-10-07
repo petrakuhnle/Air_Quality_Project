@@ -11,3 +11,6 @@ wheels/
 .DS_Store
 data/
 raw/
+
+# Backup files
+*~
