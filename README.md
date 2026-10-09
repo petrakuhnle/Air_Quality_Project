@@ -24,9 +24,10 @@ Berlin air pollution, 2025: when and where are people exposed most?
 
 ## Data
 
-[luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) — Berliner Luftgütemessnetz, SenMVKU
+[luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
 REST API, JSON · [API docs](https://luftdaten.berlin.de/api/doc) · [open data](https://daten.berlin.de/datensaetze/luftdaten-berlin)
-License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de – Berliner Luftgütemessnetz / [retrieval date]; own calculation.*
+License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de 
+Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
 Sampling height: ~3.5–4 m above container roof
 
 [Active stations](https://luftdaten.berlin.de/station/overview/active):
@@ -67,7 +68,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 |  | Compute | Note | Q |
 | --- | --- | --- | --- |
-| 1 | Top 10% station-hours across all stations, per pollutant | Hour-of-day mean per station × hour; not single maximum | 1 |
+| 1 | Top 10% highest values/hour across all stations, per pollutant | Hour-of-day mean per station × hour; not single maximum | 1 |
 | 2 | Count of top station-hours per station | Which stations dominate | 1, 3 |
 | 3 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
 | 4 | Hours above reference levels per station; days above 24-hour levels vs. allowed | Hours: indicator of extreme exposure (hourly value vs. 24-hour level); only NO₂ 200 is a true hourly limit. Days: compliance check | 3 |
@@ -75,8 +76,10 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 ## Method
 
-- Hourly values per station via API, cached
+- Hourly values fetched with `fetch.py`: one request per month × station × pollutant (API returns max. one month), 324 JSON files cached in `raw/`, never modified
+- Endpoint: `https://luftdaten.berlin.de/api/stations/{station}/data?core={no2|pm2}&period=1h&timespan=custom&...`
 - Timestamps with UTC offset → Europe/Berlin
+- Timestamps mark end of hour → shifted −1 h to hour start
 - All days included (weekdays and weekends)
 - Days with <18 valid hours excluded (75 % coverage, EU standard)
 - Outliers by type: sensor errors removed; real events (e.g. New Year's fireworks) kept and flagged
@@ -92,10 +95,16 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 |  | Content |
 | --- | --- |
-| 01-data | Fetch, drops, coverage, hourly PM2.5 availability |
-| 02-peak-hours | Top 10% station-hours and count per station, NO₂ and PM2.5 |
-| 03-season | Seasonal means per station, NO₂ and PM2.5 |
-| 04-reference-levels | Hours above reference levels per station; days vs. allowed; top hours as multiple of annual level |
+| 01 data | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
+| 02 peak hours | Top 10% station-hours and count per station, NO₂ and PM2.5 |
+| 03 season | Seasonal means per station, NO₂ and PM2.5 |
+| 04 reference levels | Hours above reference levels per station; days vs. allowed; top hours as multiple of annual level |
+
+## How to run
+
+    uv sync
+    uv run python fetch.py        # only if raw/ is empty
+    # then run notebooks 01 → 04 in order
 
 ## Stack
 
@@ -103,20 +112,20 @@ python · pandas · matplotlib · seaborn
 
 ## Status
 
-**Phase 1 — Setup and project planning**
+**Phase 1 Setup and project planning**
 
 - [x] Select dataset: suitable dataset found, first exploration done
 - [x] Define project goals: clear questions and hypotheses
 - [x] Write README: first version of the project description
 
-**Phase 2 — Data analysis and development**
+**Phase 2 Data analysis and development**
 
 - [ ] Data cleaning: handle missing values, outliers and inconsistent data
 - [ ] In-depth EDA: full exploratory data analysis with meaningful visualizations
 - [ ] First findings: key patterns and insights extracted
 - [ ] Documentation: progress and learnings documented continuously
 
-**Phase 3 — Finalization and presentation**
+**Phase 3 Finalization and presentation**
 
 - [ ] Finalize results: run final analyses
 - [ ] Create visualizations: meaningful charts for the presentation
