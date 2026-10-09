@@ -78,7 +78,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 - Hourly values per station via API, cached
 - Timestamps with UTC offset → Europe/Berlin
 - All days included (weekdays and weekends)
-- Days with <18 valid hours excluded
+- Days with <18 valid hours excluded (75 % coverage, EU standard)
 - Outliers by type: sensor errors removed; real events (e.g. New Year's fireworks) kept and flagged
 - Aggregates (pandas):
     - station × hour mean → top 10% per pollutant, counted per station
