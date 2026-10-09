@@ -67,7 +67,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 |  | Compute | Note | Q |
 | --- | --- | --- | --- |
-| 1 | Top 10% highest values/hour across all stations, per pollutant | Hour-of-day mean per station × hour; not single maximum | 1 |
+| 1 | Top 10% station-hours across all stations, per pollutant | Hour-of-day mean per station × hour; not single maximum | 1 |
 | 2 | Count of top station-hours per station | Which stations dominate | 1, 3 |
 | 3 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
 | 4 | Hours above reference levels per station; days above 24-hour levels vs. allowed | Hours: indicator of extreme exposure (hourly value vs. 24-hour level); only NO₂ 200 is a true hourly limit. Days: compliance check | 3 |
@@ -92,12 +92,10 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 ## Notebooks
 
-|  | Content |
-| --- | --- |
-| 01 data | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
-| 02 peak hours | Top 10% station-hours and count per station, NO₂ and PM2.5 |
-| 03 season | Seasonal means per station, NO₂ and PM2.5 |
-| 04 reference levels | Hours above reference levels per station; days vs. allowed; top hours as multiple of annual level |
+| 01_data | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
+| 02_peak_hours | Top 10% station-hours and count per station, NO₂ and PM2.5 |
+| 03_season | Seasonal means per station, NO₂ and PM2.5 |
+| 04_reference_levels | Hours above reference levels per station; days vs. allowed; top hours as multiple of annual level |
 
 ## How to run
 
