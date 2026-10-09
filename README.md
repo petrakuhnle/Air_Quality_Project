@@ -27,7 +27,7 @@ Berlin air pollution, 2025: when and where are people exposed most?
 [luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
 REST API, JSON · [API docs](https://luftdaten.berlin.de/api/doc) · [open data](https://daten.berlin.de/datensaetze/luftdaten-berlin)
 License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de – Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
-Sampling height: ~3.5–4 m above container roof
+Sampling height: NO₂ ~3.5–4 m above container roof, no figure published for PM2.5 ([source](https://luftdaten.berlin.de/pollution/overview))
 
 [Active stations](https://luftdaten.berlin.de/station/overview/active):
 
@@ -105,24 +105,24 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 ## Stack
 
-python · pandas · matplotlib · seaborn
+python · uv · pandas · matplotlib · seaborn
 
 ## Status
 
-**Phase 1 Setup and project planning**
+**Phase 1: Setup and project planning**
 
 - [x] Select dataset: suitable dataset found, first exploration done
 - [x] Define project goals: clear questions and hypotheses
 - [x] Write README: first version of the project description
 
-**Phase 2 Data analysis and development**
+**Phase 2: Data analysis and development**
 
-- [ ] Data cleaning: handle missing values, outliers and inconsistent data
+- [x] Data cleaning: handle missing values, outliers and inconsistent data
 - [ ] In-depth EDA: full exploratory data analysis with meaningful visualizations
 - [ ] First findings: key patterns and insights extracted
 - [ ] Documentation: progress and learnings documented continuously
 
-**Phase 3 Finalization and presentation**
+**Phase 3: Finalization and presentation**
 
 - [ ] Finalize results: run final analyses
 - [ ] Create visualizations: meaningful charts for the presentation
