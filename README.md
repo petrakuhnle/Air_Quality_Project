@@ -26,8 +26,7 @@ Berlin air pollution, 2025: when and where are people exposed most?
 
 [luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
 REST API, JSON · [API docs](https://luftdaten.berlin.de/api/doc) · [open data](https://daten.berlin.de/datensaetze/luftdaten-berlin)
-License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de 
-Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
+License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de – Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
 Sampling height: ~3.5–4 m above container roof
 
 [Active stations](https://luftdaten.berlin.de/station/overview/active):
