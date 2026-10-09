@@ -111,8 +111,8 @@ python · pandas · matplotlib · seaborn
 
 **Phase 2 — Data analysis and development**
 
-- [ ] In-depth EDA: full exploratory data analysis with meaningful visualizations
 - [ ] Data cleaning: handle missing values, outliers and inconsistent data
+- [ ] In-depth EDA: full exploratory data analysis with meaningful visualizations
 - [ ] First findings: key patterns and insights extracted
 - [ ] Documentation: progress and learnings documented continuously
 
