@@ -27,7 +27,11 @@ Berlin air pollution, 2025: when and where are people exposed most?
 [luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
 REST API, JSON · [API docs](https://luftdaten.berlin.de/api/doc) · [open data](https://daten.berlin.de/datensaetze/luftdaten-berlin)
 License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de – Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
-Sampling height: NO₂ ~3.5–4 m above container roof, no figure published for PM2.5 ([source](https://luftdaten.berlin.de/pollution/overview))
+Sampling height: published for 3 of 15 stations only — Karl-Marx-Str. 40 m,
+Leipziger Str. 35 m, Grunewald 3 m. The remaining 12 report `measuringHeight: null`
+([/api/stations](https://luftdaten.berlin.de/api/doc)). The pollutant metadata gives a
+generic standard height of ~3.5–4 m above the container roof
+([source](https://luftdaten.berlin.de/pollution/overview)), which the per-station values contradict.
 
 [Active stations](https://luftdaten.berlin.de/station/overview/active):
 
@@ -74,6 +78,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 | 5 | Hours above reference levels per station | Hourly value vs. 24-hour level: indicator of exposure, not an exceedance. Only NO₂ 200 is a true hourly limit | 3 |
 | 6 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
 | 7 | Days above 24-hour levels vs. allowed per year | Compliance check | 3 |
+| 8 | Leave-one-out IDW per station, annual means | How closely a hidden station is predicted from the others; error in µg/m³ | 1 |
 
 ## Method
 
