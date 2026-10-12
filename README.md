@@ -108,7 +108,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 ## Stack
 
-python · pyarrow · uv · pandas · matplotlib · seaborn
+python · uv · pandas · matplotlib · seaborn
 
 ## Status
 
