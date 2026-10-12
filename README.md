@@ -121,9 +121,9 @@ python · uv · pandas · matplotlib · seaborn
 **Phase 2: Data analysis and development**
 
 - [x] Data cleaning: handle missing values, outliers and inconsistent data
-- [ ] In-depth EDA: full exploratory data analysis with meaningful visualizations
-- [ ] First findings: key patterns and insights extracted
-- [ ] Documentation: progress and learnings documented continuously
+- [x] In-depth EDA: full exploratory data analysis with meaningful visualizations
+- [x] First findings: key patterns and insights extracted
+- [x] Documentation: progress and learnings documented continuously
 
 **Phase 3: Finalization and presentation**
 
