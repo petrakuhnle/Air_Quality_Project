@@ -99,6 +99,7 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 | [01_data](notebooks/01_data.ipynb) | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
 | [02_peak_hours](notebooks/02_peak_hours.ipynb) | Top 10% station-hours, hour of day, weekday vs. weekend, station ranking against reference levels, worst single hours |
 | [03_season](notebooks/03_season.ipynb) | Seasonal means per station, days above 24-hour levels vs. allowed, NO₂ and PM2.5 |
+| [04_spatial](notebooks/04_spatial.ipynb) | Station coordinates, leave-one-out inverse distance weighting, how far a measurement travels |
 
 ## How to run
 
