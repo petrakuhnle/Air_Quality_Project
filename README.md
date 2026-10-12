@@ -93,9 +93,8 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 ## Notebooks
 
 | 01_data | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
-| 02_peak_hours | Top 10% station-hours and count per station, NO₂ and PM2.5 |
+| 02_peak_hours | Top 10% station-hours and count per station, Time of Day, Reference levels|
 | 03_peak_seasons | Seasonal means per station, NO₂ and PM2.5 |
-| 04_reference_levels | Hours above reference levels per station; days vs. allowed; top hours as multiple of annual level |
 
 ## How to run
 
