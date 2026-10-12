@@ -69,9 +69,11 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 | --- | --- | --- | --- |
 | 1 | Top 10% station-hours across all stations, per pollutant | Hour-of-day mean per station × hour; not single maximum | 1 |
 | 2 | Count of top station-hours per station | Which stations dominate | 1, 3 |
-| 3 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
-| 4 | Hours above reference levels per station; days above 24-hour levels vs. allowed | Hours: indicator of extreme exposure (hourly value vs. 24-hour level); only NO₂ 200 is a true hourly limit. Days: compliance check | 3 |
-| 5 | Top station-hours as multiple of the annual level | Scale only, not an exceedance | 3 |
+| 3 | Hour-of-day mean per station, weekday vs. weekend | Traffic signal: NO₂ should drop at weekends, PM2.5 should not | 1 |
+| 4 | Annual mean per station vs. EU 2030 and WHO levels | Which stations already fail the level they will be judged by | 3 |
+| 5 | Hours above reference levels per station | Hourly value vs. 24-hour level: indicator of exposure, not an exceedance. Only NO₂ 200 is a true hourly limit | 3 |
+| 6 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
+| 7 | Days above 24-hour levels vs. allowed per year | Compliance check | 3 |
 
 ## Method
 
@@ -92,9 +94,11 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 
 ## Notebooks
 
-| 01_data | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
-| 02_peak_hours | Top 10% station-hours and count per station, Time of Day, Reference levels|
-| 03_peak_seasons | Seasonal means per station, NO₂ and PM2.5 |
+| Notebook | Content |
+| --- | --- |
+| [01_data](notebooks/01_data.ipynb) | Load, time zone, drops, outliers, coverage, hourly PM2.5 availability |
+| [02_peak_hours](notebooks/02_peak_hours.ipynb) | Top 10% station-hours, hour of day, weekday vs. weekend, station ranking against reference levels, worst single hours |
+| [03_season](notebooks/03_season.ipynb) | Seasonal means per station, days above 24-hour levels vs. allowed, NO₂ and PM2.5 |
 
 ## How to run
 
