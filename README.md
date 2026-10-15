@@ -122,7 +122,7 @@ from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/d
 
 ## Stack
 
-python · uv · pandas · matplotlib · seaborn
+Python 3.14 · uv · pandas · numpy · matplotlib · seaborn
 
 ## Status
 
