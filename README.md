@@ -80,7 +80,10 @@ Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/
 | 5 | Hours above reference levels per station | Hourly value vs. 24-hour level: indicator of exposure, not an exceedance. Only NO₂ 200 is a true hourly limit | 3 |
 | 6 | Seasonal mean per station | Seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov | 2 |
 | 7 | Days above 24-hour levels vs. allowed per year | Compliance check | 3 |
-| 8 | Leave-one-out IDW per station, annual means | How closely a hidden station is predicted from the others; error in µg/m³ | 1 |
+| 8 | Distance from each station to its nearest neighbour | How dense the network is | 1 |
+| 9 | Each station estimated from the others, inverse distance weighting | How far a measurement travels, as an error in µg/m³ | 1, 3 |
+| 10 | City model FAirQ 2025 at each station | Model error against the measurement and against the estimate | 3 |
+| 11 | City model read every 2 km inside Berlin | Share of the area above each level, against the share of stations | 3 |
 
 ## Method
 
