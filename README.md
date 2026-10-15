@@ -72,6 +72,16 @@ in Germany [39. BImSchV](https://www.gesetze-im-internet.de/bimschv_39/) ·
 from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/dir/2024/2881/oj) ·
 [WHO guidelines 2021](https://www.who.int/publications/i/item/9789240034228)
 
+## Sources
+
+| | Source | Licence |
+| --- | --- | --- |
+| Measurements | [luftdaten.berlin.de](https://luftdaten.berlin.de/), Berliner Luftgütemessnetz, SenMVKU | [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) |
+| City model | [Digitale Berliner Luftkarte](https://www.berlin.de/sen/uvk/umwelt/luft/luftqualitaet/digitale-berliner-luftkarte/), FAirQ 2025, read through WMS `ua_luftschadstoffbelastung_2025` | dl-de/zero-2-0 |
+| Weather, March 2025 | [Deutscher Wetterdienst](https://www.dwd.de/DE/presse/pressemitteilungen/DE/2025/20250331_pm_maerz_news.html) | – |
+| Berlin boundary | [OpenStreetMap](https://www.openstreetmap.org/copyright) via Nominatim | ODbL |
+| Limits and guidelines | See Reference levels | – |
+
 ## Analyses
 
 |  | Compute | Note | Q |
