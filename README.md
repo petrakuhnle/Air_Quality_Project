@@ -59,15 +59,18 @@ inlet heights.
 
 µg/m³
 
-|  | Period | EU 2030 | Allowed/year | WHO | Allowed/year |
-| --- | --- | --- | --- | --- | --- |
-| NO₂ | 1 hour | 200 | 3 | – | – |
-| NO₂ | 24 hours | 50 | 18 | 25 | 3–4 days (99th percentile) |
-| NO₂ | year | 20 | – | 10 | – |
-| PM2.5 | 24 hours | 25 | 18 | 15 | 3–4 days (99th percentile) |
-| PM2.5 | year | 10 | – | 5 | – |
+| | Period | EU in force 2025 | Allowed/year | EU from 2030 | Allowed/year | WHO 2021 | Allowed/year |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| NO₂ | 1 hour | 200 | 18 | 200 | 3 | – | – |
+| NO₂ | 24 hours | – | – | 50 | 18 | 25 | 3–4 days |
+| NO₂ | year | 40 | – | 20 | – | 10 | – |
+| PM2.5 | 24 hours | – | – | 25 | 18 | 15 | 3–4 days |
+| PM2.5 | year | 25 | – | 10 | – | 5 | – |
 
-Sources: [Directive (EU) 2024/2881, Annex I, Table 1](https://eur-lex.europa.eu/eli/dir/2024/2881/oj) · [WHO guidelines 2021](https://www.who.int/publications/i/item/9789240034228)
+Sources: in force 2025 · [Directive 2008/50/EC](https://eur-lex.europa.eu/eli/dir/2008/50/oj),
+in Germany [39. BImSchV](https://www.gesetze-im-internet.de/bimschv_39/) ·
+from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/dir/2024/2881/oj) ·
+[WHO guidelines 2021](https://www.who.int/publications/i/item/9789240034228)
 
 ## Analyses
 
