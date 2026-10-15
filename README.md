@@ -27,11 +27,13 @@ Berlin air pollution, 2025: when and where are people exposed most?
 [luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
 REST API, JSON · [API docs](https://luftdaten.berlin.de/api/doc) · [open data](https://daten.berlin.de/datensaetze/luftdaten-berlin)
 License: [dl-de/by-2-0](https://www.govdata.de/dl-de/by-2-0) · Cite: *luftdaten.berlin.de – Berliner Luftgütemessnetz / 2026-10-07; own calculation.*
-Sampling height: published for 3 of 15 stations only — Karl-Marx-Str. 40 m,
-Leipziger Str. 35 m, Grunewald 3 m. The remaining 12 report `measuringHeight: null`
-([/api/stations](https://luftdaten.berlin.de/api/doc)). The pollutant metadata gives a
-generic standard height of ~3.5–4 m above the container roof
-([source](https://luftdaten.berlin.de/pollution/overview)), which the per-station values contradict.
+
+Measuring height: the pollutant metadata gives a standard height of about 3.5–4 m
+above the container roof for NO₂, and no figure for PM2.5
+([source](https://luftdaten.berlin.de/pollution/overview)). The API field
+`measuringHeight` is filled for 3 of 15 stations (40, 35 and 3) and is undocumented.
+40 and 35 lie within Berlin's ground elevation above sea level, so they may not be
+inlet heights.
 
 [Active stations](https://luftdaten.berlin.de/station/overview/active):
 
