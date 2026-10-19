@@ -7,7 +7,9 @@ Input: a tidy hourly table `hourly` with columns
 Load it from the cache written in notebook 01 (after drops).
 All numbers come from this table; nothing is typed by hand.
 """
+
 import json
+
 import numpy as np
 import pandas as pd
 
@@ -131,7 +133,7 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json") -> dict:
             "timezone": "Europe/Berlin",
             "pollutants": POLLUTANTS,
             "rule_excluded_day": "fewer than 18 valid hours",
-            "excluded_days_count": int(len(excluded)),
+            "excluded_days_count": len(excluded),
         },
         "stations": stations_meta,
         "coverage": coverage,
