@@ -1,5 +1,5 @@
 """
-BerlinLuft · object skeleton (data-independent).
+Berliner Luft · object skeleton (data-independent).
 
 Reads the dict produced by export_berlin_2025.py (berlin_2025.json).
 quick_values() is refused until hourly values are added to the export.
