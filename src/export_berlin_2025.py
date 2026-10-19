@@ -80,6 +80,63 @@ def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     return float(6371 * 2 * np.arcsin(np.sqrt(a)))
 
 
+def simplify(ring: list, tolerance: float) -> list:
+    """Reduce the points of a line, keeping its shape (Ramer-Douglas-Peucker).
+
+    Args:
+        ring: Points as [lng, lat] pairs.
+        tolerance: Largest allowed deviation, in degrees.
+
+    Returns:
+        The kept points, first and last included.
+    """
+    if len(ring) < 3:
+        return ring
+    keep = [False] * len(ring)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(ring) - 1)]
+    while stack:
+        a, b = stack.pop()
+        (x1, y1), (x2, y2) = ring[a], ring[b]
+        dx, dy = x2 - x1, y2 - y1
+        norm = (dx * dx + dy * dy) ** 0.5
+        best, far = -1.0, None
+        for i in range(a + 1, b):
+            x, y = ring[i]
+            d = (abs(dy * x - dx * y + x2 * y1 - y2 * x1) / norm if norm
+                 else ((x - x1) ** 2 + (y - y1) ** 2) ** 0.5)
+            if d > best:
+                best, far = d, i
+        if far is not None and best > tolerance:
+            keep[far] = True
+            stack += [(a, far), (far, b)]
+    return [pt for pt, k in zip(ring, keep, strict=True) if k]
+
+
+def berlin_outline(boundary_json: str | None, tolerance: float = 0.002) -> list:
+    """Outer rings of Berlin's boundary, simplified for a small map.
+
+    The boundary is the OpenStreetMap shape cached by notebook 04.
+
+    Args:
+        boundary_json: Path to data/raw/berlin_boundary.json, or None.
+        tolerance: Simplification tolerance in degrees (0.002 is about 150 m).
+
+    Returns:
+        A list of rings, each a list of [lng, lat] pairs rounded to 4 decimals.
+    """
+    if not boundary_json:
+        return []
+    with open(boundary_json, encoding="utf-8") as f:
+        shape = json.load(f)
+    parts = shape["coordinates"] if shape["type"] == "MultiPolygon" else [shape["coordinates"]]
+    rings = []
+    for part in parts:
+        ring = simplify([list(map(float, pt)) for pt in part[0]], tolerance)
+        rings.append([[round(x, 4), round(y, 4)] for x, y in ring])
+    return rings
+
+
 def station_metadata(stations: list[str], df: pd.DataFrame,
                      stations_json: str | None) -> list[dict]:
     """Build the station list for the dashboard.
@@ -124,7 +181,7 @@ def station_metadata(stations: list[str], df: pd.DataFrame,
 
 
 def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
-           stations_json: str | None = None) -> dict:
+           stations_json: str | None = None, boundary_json: str | None = None) -> dict:
     """Compute the dashboard aggregates and write them to JSON.
 
     Args:
@@ -132,6 +189,7 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
             ("NO2" or "PM2.5"), timestamp (tz-aware) and value (µg/m³).
         path: Output file.
         stations_json: Path to raw/stations.json for coordinates and height.
+        boundary_json: Path to raw/berlin_boundary.json for the map outline.
 
     Returns:
         The exported data as a dict.
@@ -171,6 +229,35 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
         for s in stations
     }
 
+    # Mean and count by month, day type and hour, so the dashboard can show
+    # the hour-of-day profile for any set of months (count-weighted mean)
+    pm = df.groupby(["station", "pollutant", "month", "daytype", "hour"])["value"].agg(["mean", "size"])
+    hour_profile_month = {s: {p: {} for p in POLLUTANTS} for s in stations}
+    for (s, p, m, dt, h), row in pm.iterrows():
+        cell = hour_profile_month[s][p].setdefault(str(m), {
+            "weekday": {"mean": [None] * 24, "n": [0] * 24},
+            "weekend": {"mean": [None] * 24, "n": [0] * 24},
+        })
+        cell[dt]["mean"][h] = round(float(row["mean"]), 2)
+        cell[dt]["n"][h] = int(row["size"])
+
+    # Lowest and highest hour per month and day type, with the hour it was measured
+    extremes = {s: {p: {} for p in POLLUTANTS} for s in stations}
+    for (s, p, m, dt), g in df.groupby(["station", "pollutant", "month", "daytype"]):
+        lo, hi = g.loc[g["value"].idxmin()], g.loc[g["value"].idxmax()]
+        fw = g["fireworks"] if "fireworks" in g else pd.Series(False, index=g.index)
+        extremes[s][p].setdefault(str(m), {})[dt] = {
+            "min": [float(lo["value"]), lo["timestamp"].strftime("%Y-%m-%dT%H:00"), bool(fw[lo.name])],
+            "max": [float(hi["value"]), hi["timestamp"].strftime("%Y-%m-%dT%H:00"), bool(fw[hi.name])],
+        }
+
+    # Hours in each month and day type, for coverage (March 743, October 745)
+    slots = pd.date_range("2025-01-01 00:00", "2025-12-31 23:00", freq="h", tz="Europe/Berlin")
+    kind = np.where(slots.dayofweek >= 5, "weekend", "weekday")
+    per = pd.Series(1, index=pd.MultiIndex.from_arrays([slots.month, kind])).groupby(level=[0, 1]).sum()
+    hours_in_period = {str(m): {dt: int(per.get((m, dt), 0)) for dt in ["weekday", "weekend"]}
+                       for m in range(1, 13)}
+
     # Monthly and seasonal means
     mon = df.groupby(["station", "pollutant", "month"])["value"].mean()
     month_mean = {
@@ -198,6 +285,7 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
     annual_mean = {s: {p: float(ann[(s, p)]) if (s, p) in ann.index else None for p in POLLUTANTS}
                    for s in stations}
 
+    # Top 10 % of station x hour-of-day means, cutoff per pollutant (as in 02)
     # Stations without a sensor for a pollutant get None, not 0
     measured = {p: set(df.loc[df["pollutant"] == p, "station"]) for p in POLLUTANTS}
 
@@ -216,7 +304,8 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
         entry = dict(lim)
         if p == "NO2":
             above = sub[sub["value"] > lim["hourly_200"]].groupby("station").size()
-            entry["hours_over_200"] = {s: int(above.get(s, 0)) for s in stations}
+            entry["hours_over_200"] = {s: int(above.get(s, 0)) if s in measured[p] else None
+                                       for s in stations}
         eu = (daily > lim["daily_eu2030"]).groupby(level="station").sum()
         who = (daily > lim["daily_who"]).groupby(level="station").sum()
         entry["days_over_eu2030"] = {s: int(eu.get(s, 0)) if s in measured[p] else None
@@ -236,9 +325,13 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
             "excluded_days_count": len(excluded),
         },
         "stations": station_metadata(stations, df, stations_json),
+        "boundary": berlin_outline(boundary_json),
+        "hours_in_period": hours_in_period,
+        "extremes": extremes,
         "coverage": coverage,
         "annual_mean": annual_mean,
         "hour_profile": hour_profile,
+        "hour_profile_month": hour_profile_month,
         "month_mean": month_mean,
         "season_mean": season_mean,
         "daily_mean": daily_mean,
@@ -247,5 +340,5 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
         "note": "Measured values only. Level labels off until LQI bands are confirmed.",
     }
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=1)
+        json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     return out
