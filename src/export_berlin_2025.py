@@ -1,11 +1,7 @@
-"""
-Step 1 · Export berlin_2025.json for the single dashboard.
+"""Export the 2025 aggregates used by the dashboard to one JSON file.
 
-Input: a tidy hourly table `hourly` with columns
-    station (str, e.g. "mc010"), pollutant (str, "NO2" or "PM2.5"),
-    timestamp (tz-aware, Europe/Berlin), value (float, µg/m³)
-Load it from the cache written in notebook 01 (after drops).
-All numbers come from this table; nothing is typed by hand.
+The input is the cleaned hourly table from notebook 01 (see load_hourly.py).
+All values in the JSON are computed here from that table.
 """
 
 import json
@@ -17,21 +13,129 @@ POLLUTANTS = ["NO2", "PM2.5"]
 MIN_VALID_HOURS = 18
 HOURS_IN_YEAR = 8760
 
-# Reference levels from the README (µg/m³)
+# Reference levels in µg/m³, as in the README
 LIMITS = {
-    "NO2":   {"annual_in_force": 40, "annual_eu2030": 20, "annual_who": 10,
-              "hourly_200": 200, "daily_eu2030": 50, "daily_eu2030_allowed": 18,
-              "daily_who": 25, "daily_who_allowed": 4},
-    "PM2.5": {"annual_in_force": 25, "annual_eu2030": 10, "annual_who": 5,
-              "daily_eu2030": 25, "daily_eu2030_allowed": 18,
-              "daily_who": 15, "daily_who_allowed": 4},
+    "NO2": {
+        "annual_in_force": 40, "annual_eu2030": 20, "annual_who": 10,
+        "hourly_200": 200,
+        "daily_eu2030": 50, "daily_eu2030_allowed": 18,
+        "daily_who": 25, "daily_who_allowed": 4,
+    },
+    "PM2.5": {
+        "annual_in_force": 25, "annual_eu2030": 10, "annual_who": 5,
+        "daily_eu2030": 25, "daily_eu2030_allowed": 18,
+        "daily_who": 15, "daily_who_allowed": 4,
+    },
 }
-SEASON = {12: "winter", 1: "winter", 2: "winter", 3: "spring", 4: "spring",
-          5: "spring", 6: "summer", 7: "summer", 8: "summer",
-          9: "autumn", 10: "autumn", 11: "autumn"}
+
+# Street names and station types, same as notebook 02
+STATION_NAME = {
+    "mc010": "Amrumer Str., Wedding",
+    "mc027": "Schichauweg, Marienfelde",
+    "mc032": "Grunewald, Charlottenburg-Wilmersdorf",
+    "mc042": "Nansenstr., Neukölln",
+    "mc077": "Buch, Pankow",
+    "mc085": "Friedrichshagen, Treptow-Köpenick",
+    "mc117": "Schildhornstr., Steglitz",
+    "mc124": "Mariendorfer Damm, Mariendorf",
+    "mc144": "Silbersteinstr., Neukölln",
+    "mc145": "Frohnau, Reinickendorf",
+    "mc171": "Brückenstr., Mitte",
+    "mc174": "Frankfurter Allee, Friedrichshain",
+    "mc190": "Leipziger Str., Mitte",
+    "mc221": "Karl-Marx-Str., Neukölln",
+    "mc282": "Karlshorst, Lichtenberg",
+}
+STATION_TYPE = {
+    "mc010": "background", "mc042": "background",
+    "mc171": "background", "mc282": "background",
+    "mc027": "suburb", "mc032": "suburb", "mc077": "suburb",
+    "mc085": "suburb", "mc145": "suburb",
+    "mc117": "traffic", "mc124": "traffic", "mc144": "traffic",
+    "mc174": "traffic", "mc190": "traffic", "mc221": "traffic",
+}
+
+SEASON = {
+    12: "winter", 1: "winter", 2: "winter",
+    3: "spring", 4: "spring", 5: "spring",
+    6: "summer", 7: "summer", 8: "summer",
+    9: "autumn", 10: "autumn", 11: "autumn",
+}
 
 
-def export(hourly: pd.DataFrame, path: str = "berlin_2025.json") -> dict:
+def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Great-circle distance between two points.
+
+    Args:
+        lat1: Latitude of the first point, WGS84 degrees.
+        lng1: Longitude of the first point, WGS84 degrees.
+        lat2: Latitude of the second point, WGS84 degrees.
+        lng2: Longitude of the second point, WGS84 degrees.
+
+    Returns:
+        Distance in km.
+    """
+    la1, lo1, la2, lo2 = map(np.radians, [lat1, lng1, lat2, lng2])
+    a = np.sin((la2 - la1) / 2) ** 2 + np.cos(la1) * np.cos(la2) * np.sin((lo2 - lo1) / 2) ** 2
+    return float(6371 * 2 * np.arcsin(np.sqrt(a)))
+
+
+def station_metadata(stations: list[str], df: pd.DataFrame,
+                     stations_json: str | None) -> list[dict]:
+    """Build the station list for the dashboard.
+
+    Coordinates and measuring height come from the cached API response.
+    Missing fields stay None.
+
+    Args:
+        stations: Station codes present in the data, e.g. ["mc010", ...].
+        df: Hourly table with columns station and pollutant.
+        stations_json: Path to raw/stations.json, or None to skip coordinates.
+
+    Returns:
+        One dict per station with code, name, type, lat, lng,
+        inlet_height_m, pm25 and distance_nearest_km.
+    """
+    api = {}
+    if stations_json:
+        with open(stations_json, encoding="utf-8") as f:
+            api = {s["code"]: s for s in json.load(f)}
+
+    rows = []
+    for code in stations:
+        s = api.get(code, {})
+        rows.append({
+            "code": code,
+            "name": STATION_NAME.get(code),
+            "type": STATION_TYPE.get(code),
+            "lat": float(s["lat"]) if s.get("lat") is not None else None,
+            "lng": float(s["lng"]) if s.get("lng") is not None else None,
+            "inlet_height_m": s.get("measuringHeight"),
+            "pm25": bool((df.loc[df["station"] == code, "pollutant"] == "PM2.5").any()),
+        })
+
+    # Nearest other station, as in notebook 04
+    located = [r for r in rows if r["lat"] is not None]
+    for r in rows:
+        others = [haversine_km(r["lat"], r["lng"], o["lat"], o["lng"])
+                  for o in located if o["code"] != r["code"]] if r["lat"] is not None else []
+        r["distance_nearest_km"] = round(min(others), 1) if others else None
+    return rows
+
+
+def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
+           stations_json: str | None = None) -> dict:
+    """Compute the dashboard aggregates and write them to JSON.
+
+    Args:
+        hourly: Cleaned hourly table with columns station, pollutant
+            ("NO2" or "PM2.5"), timestamp (tz-aware) and value (µg/m³).
+        path: Output file.
+        stations_json: Path to raw/stations.json for coordinates and height.
+
+    Returns:
+        The exported data as a dict.
+    """
     df = hourly.copy()
     df["timestamp"] = pd.to_datetime(df["timestamp"]).dt.tz_convert("Europe/Berlin")
     df = df[(df["timestamp"].dt.year == 2025) & df["pollutant"].isin(POLLUTANTS)]
@@ -40,90 +144,81 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json") -> dict:
     df["hour"] = df["timestamp"].dt.hour
     df["month"] = df["timestamp"].dt.month
     df["daytype"] = np.where(df["timestamp"].dt.dayofweek >= 5, "weekend", "weekday")
+    df["season"] = df["month"].map(SEASON)
 
     stations = sorted(df["station"].unique())
 
-    # Coverage and excluded days (rule: fewer than 18 valid hours)
-    valid = df.groupby(["station", "pollutant", "date"]).size().rename("n").reset_index()
-    kept_days = valid[valid["n"] >= MIN_VALID_HOURS]
-    excluded = valid[valid["n"] < MIN_VALID_HOURS]
-    df = df.merge(kept_days[["station", "pollutant", "date"]],
-                  on=["station", "pollutant", "date"], how="inner")
+    # Days with fewer than 18 valid hours are dropped (EU 75 % rule).
+    # hourly.csv is already filtered in 01, so this normally removes nothing.
+    n = df.groupby(["station", "pollutant", "date"]).size().rename("n").reset_index()
+    excluded = n[n["n"] < MIN_VALID_HOURS]
+    keep = n.loc[n["n"] >= MIN_VALID_HOURS, ["station", "pollutant", "date"]]
+    df = df.merge(keep, on=["station", "pollutant", "date"])
 
-    coverage = {}
-    for s in stations:
-        coverage[s] = {}
-        for p in POLLUTANTS:
-            n = int(((df["station"] == s) & (df["pollutant"] == p)).sum())
-            coverage[s][p] = round(n / HOURS_IN_YEAR, 4)
+    # Share of the year's hours with a value
+    counts = df.groupby(["station", "pollutant"]).size()
+    coverage = {s: {p: round(float(counts.get((s, p), 0)) / HOURS_IN_YEAR, 4) for p in POLLUTANTS}
+                for s in stations}
 
-    # Hourly profile per station, pollutant, day type (24 values each)
+    # Mean by hour of day, weekday and weekend separately
     prof = df.groupby(["station", "pollutant", "daytype", "hour"])["value"].mean()
-    hour_profile = {}
-    for s in stations:
-        hour_profile[s] = {}
-        for p in POLLUTANTS:
-            hour_profile[s][p] = {}
-            for dt in ["weekday", "weekend"]:
-                vals = prof.loc[(s, p, dt)] if (s, p, dt) in prof.index else pd.Series(dtype=float)
-                hour_profile[s][p][dt] = [None if h not in vals.index else round(float(vals[h]), 2)
-                                          for h in range(24)]
+    hour_profile = {
+        s: {p: {dt: [round(float(prof[(s, p, dt, h)]), 2) if (s, p, dt, h) in prof.index else None
+                     for h in range(24)]
+                for dt in ["weekday", "weekend"]}
+            for p in POLLUTANTS}
+        for s in stations
+    }
 
-    # Monthly means (12 per station and pollutant)
-    mm = df.groupby(["station", "pollutant", "month"])["value"].mean()
-    month_mean = {s: {p: [None if (s, p, m) not in mm.index else round(float(mm[(s, p, m)]), 2)
-                          for m in range(1, 13)] for p in POLLUTANTS} for s in stations}
+    # Monthly and seasonal means
+    mon = df.groupby(["station", "pollutant", "month"])["value"].mean()
+    month_mean = {
+        s: {p: [round(float(mon[(s, p, m)]), 2) if (s, p, m) in mon.index else None
+                for m in range(1, 13)]
+            for p in POLLUTANTS}
+        for s in stations
+    }
+    sea = df.groupby(["station", "pollutant", "season"])["value"].mean()
+    season_mean = {
+        s: {p: {se: round(float(sea[(s, p, se)]), 2) if (s, p, se) in sea.index else None
+                for se in ["winter", "spring", "summer", "autumn"]}
+            for p in POLLUTANTS}
+        for s in stations
+    }
 
-    # Seasonal means (Dec counted in winter of 2025, as the method states)
-    df["season"] = df["month"].map(SEASON)
-    sm = df.groupby(["station", "pollutant", "season"])["value"].mean()
-    season_mean = {}
-    for s in stations:
-        season_mean[s] = {}
-        for p in POLLUTANTS:
-            season_mean[s][p] = {se: (None if (s, p, se) not in sm.index else round(float(sm[(s, p, se)]), 2))
-                                 for se in ["winter", "spring", "summer", "autumn"]}
-
-    # Daily means (365 per station and pollutant at most, for the day picker)
-    dm = df.groupby(["station", "pollutant", "date"])["value"].mean().round(2)
-    daily_mean = {}
-    for s in stations:
-        daily_mean[s] = {}
-        for p in POLLUTANTS:
-            series = dm.loc[(s, p)] if (s, p) in dm.index else pd.Series(dtype=float)
-            daily_mean[s][p] = {d.isoformat(): float(v) for d, v in series.items()}
+    # Daily means, used by the day picker and the day view
+    day = df.groupby(["station", "pollutant", "date"])["value"].mean().round(2)
+    daily_mean = {s: {p: {} for p in POLLUTANTS} for s in stations}
+    for (s, p, d), v in day.items():
+        daily_mean[s][p][d.isoformat()] = float(v)
 
     # Annual means
-    annual = df.groupby(["station", "pollutant"])["value"].mean().round(2)
-    annual_mean = {s: {p: (None if (s, p) not in annual.index else float(annual[(s, p)]))
-                       for p in POLLUTANTS} for s in stations}
+    ann = df.groupby(["station", "pollutant"])["value"].mean().round(2)
+    annual_mean = {s: {p: float(ann[(s, p)]) if (s, p) in ann.index else None for p in POLLUTANTS}
+                   for s in stations}
 
-    # Top 10% station-hours: station x hour-of-day mean, cutoff = 90th percentile
-    # within each pollutant (separate cutoffs, as in notebook 02, cell 4),
-    # counted per station.
+    # Top 10 % of station x hour-of-day means, cutoff per pollutant (as in 02)
     top10 = {}
     for p in POLLUTANTS:
-        sub = df[df["pollutant"] == p].groupby(["station", "hour"])["value"].mean()
-        cut = sub.quantile(0.90)
-        counts = sub[sub >= cut].groupby(level="station").size()
-        top10[p] = {s: int(counts.get(s, 0)) for s in stations}
+        m = df[df["pollutant"] == p].groupby(["station", "hour"])["value"].mean()
+        top = m[m >= m.quantile(0.90)].groupby(level="station").size()
+        top10[p] = {s: int(top.get(s, 0)) for s in stations}
 
-    # Hours and days above each reference
-    limits_out = {}
+    # Hours and days above each level
+    limits = {}
     for p in POLLUTANTS:
         lim = LIMITS[p]
         sub = df[df["pollutant"] == p]
         daily = sub.groupby(["station", "date"])["value"].mean()
-        entry = {k: v for k, v in lim.items()}
+        entry = dict(lim)
         if p == "NO2":
-            hrs = sub[sub["value"] > lim["hourly_200"]].groupby("station").size()
-            entry["hours_over_200"] = {s: int(hrs.get(s, 0)) for s in stations}
-        entry["days_over_eu2030"] = {s: int((daily.loc[s] > lim["daily_eu2030"]).sum()) if s in daily.index.get_level_values(0) else 0 for s in stations}
-        entry["days_over_who"] = {s: int((daily.loc[s] > lim["daily_who"]).sum()) if s in daily.index.get_level_values(0) else 0 for s in stations}
-        limits_out[p] = entry
-
-    stations_meta = [{"code": s, "pm25": bool((df[(df["station"] == s)]["pollutant"] == "PM2.5").any())}
-                     for s in stations]
+            above = sub[sub["value"] > lim["hourly_200"]].groupby("station").size()
+            entry["hours_over_200"] = {s: int(above.get(s, 0)) for s in stations}
+        eu = (daily > lim["daily_eu2030"]).groupby(level="station").sum()
+        who = (daily > lim["daily_who"]).groupby(level="station").sum()
+        entry["days_over_eu2030"] = {s: int(eu.get(s, 0)) for s in stations}
+        entry["days_over_who"] = {s: int(who.get(s, 0)) for s in stations}
+        limits[p] = entry
 
     out = {
         "meta": {
@@ -135,7 +230,7 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json") -> dict:
             "rule_excluded_day": "fewer than 18 valid hours",
             "excluded_days_count": len(excluded),
         },
-        "stations": stations_meta,
+        "stations": station_metadata(stations, df, stations_json),
         "coverage": coverage,
         "annual_mean": annual_mean,
         "hour_profile": hour_profile,
@@ -143,15 +238,9 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json") -> dict:
         "season_mean": season_mean,
         "daily_mean": daily_mean,
         "top10_hours": top10,
-        "limits": limits_out,
+        "limits": limits,
         "note": "Measured values only. Level labels off until LQI bands are confirmed.",
     }
     with open(path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=1)
     return out
-
-
-if __name__ == "__main__":
-    # Replace with the cached hourly table from notebook 01:
-    # hourly = pd.read_parquet("cache/hourly_2025.parquet")
-    raise SystemExit("Load `hourly` from notebook 01's cache, then call export(hourly).")
