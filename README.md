@@ -151,7 +151,7 @@ Python 3.14 · uv · pandas · numpy · matplotlib · seaborn
 
 **Phase 3: Finalization and presentation**
 
-- [ ] Finalize results: run final analyses
-- [ ] Create visualizations: meaningful charts for the presentation
+- [x] Finalize results: run final analyses
+- [x] Create visualizations: meaningful charts for the presentation
 - [ ] Complete documentation: revise README, code comments and project documentation
 - [ ] Prepare presentation: develop storyline and create slides
