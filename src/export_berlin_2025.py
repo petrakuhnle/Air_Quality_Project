@@ -157,7 +157,8 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
 
     # Share of the year's hours with a value
     counts = df.groupby(["station", "pollutant"]).size()
-    coverage = {s: {p: round(float(counts.get((s, p), 0)) / HOURS_IN_YEAR, 4) for p in POLLUTANTS}
+    coverage = {s: {p: round(float(counts[(s, p)]) / HOURS_IN_YEAR, 4) if (s, p) in counts.index else None
+                    for p in POLLUTANTS}
                 for s in stations}
 
     # Mean by hour of day, weekday and weekend separately
@@ -197,12 +198,14 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
     annual_mean = {s: {p: float(ann[(s, p)]) if (s, p) in ann.index else None for p in POLLUTANTS}
                    for s in stations}
 
-    # Top 10 % of station x hour-of-day means, cutoff per pollutant (as in 02)
+    # Stations without a sensor for a pollutant get None, not 0
+    measured = {p: set(df.loc[df["pollutant"] == p, "station"]) for p in POLLUTANTS}
+
     top10 = {}
     for p in POLLUTANTS:
         m = df[df["pollutant"] == p].groupby(["station", "hour"])["value"].mean()
         top = m[m >= m.quantile(0.90)].groupby(level="station").size()
-        top10[p] = {s: int(top.get(s, 0)) for s in stations}
+        top10[p] = {s: int(top.get(s, 0)) if s in measured[p] else None for s in stations}
 
     # Hours and days above each level
     limits = {}
@@ -216,8 +219,10 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
             entry["hours_over_200"] = {s: int(above.get(s, 0)) for s in stations}
         eu = (daily > lim["daily_eu2030"]).groupby(level="station").sum()
         who = (daily > lim["daily_who"]).groupby(level="station").sum()
-        entry["days_over_eu2030"] = {s: int(eu.get(s, 0)) for s in stations}
-        entry["days_over_who"] = {s: int(who.get(s, 0)) for s in stations}
+        entry["days_over_eu2030"] = {s: int(eu.get(s, 0)) if s in measured[p] else None
+                                     for s in stations}
+        entry["days_over_who"] = {s: int(who.get(s, 0)) if s in measured[p] else None
+                                  for s in stations}
         limits[p] = entry
 
     out = {
