@@ -49,7 +49,7 @@ class Refused(Exception):
         self.reason = reason
 
 
-class BerlinLuft:
+class BerlinerLuft:
     """The dashboard: holds the data and the current selection.
 
     Args:
