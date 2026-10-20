@@ -189,6 +189,30 @@ from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/d
 
 Python 3.14 · uv · pandas · numpy · matplotlib · seaborn · dashboard: HTML, CSS and JavaScript, no libraries
 
+## Known and assumed
+
+**Measured**
+
+- Hourly concentrations at 15 fixed stations, 2025: 98.5 to 99.9 % of hours valid after drops (01)
+- 13 days (312 rows) dropped for fewer than 18 valid hours (01)
+
+**Assumed or unknown**
+
+- Inlet heights are taken as comparable. The API field `measuringHeight` is filled for 3 of 15 stations
+  and undocumented; 35 and 40 may be ground elevation (02, 04)
+- Public holidays count as weekdays, about ten days a year (02)
+- WHO and EU levels are annual means; against hours and months they are used as a yardstick only (03)
+- Why the city model reads high is not established. The model is fitted with measurements, so the
+  station estimates are the only independent test (04)
+- Area is not population: where people live is not weighted (04)
+
+**Not claimed**
+
+- Trends: one year only. The March NO₂ peak may not recur (03)
+- Causes: patterns fit traffic but do not prove it. The weekend NO₂ drop is citywide (02)
+- Heating behind the February PM2.5 peak: plausible, not shown by this data (03)
+- Health effects: concentrations are measured; effects come from the cited literature
+
 ## Status
 
 **Phase 1: Setup and project planning**
