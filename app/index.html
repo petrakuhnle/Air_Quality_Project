@@ -655,8 +655,9 @@ function render() {
   requestAnimationFrame(fitWhen);
 }
 
-fetch("berlin_2025.json")
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+// Data comes from berlin_2025.json next to this file, or is built in by the Streamlit app (window.BERLIN_DATA)
+(window.BERLIN_DATA ? Promise.resolve(window.BERLIN_DATA)
+  : fetch("berlin_2025.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }))
   .then(data => {
     D = data;
     let t;
