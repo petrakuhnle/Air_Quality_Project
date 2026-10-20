@@ -4,6 +4,14 @@
 
 Berlin air pollution, 2025: when and where are people exposed most?
 
+**Key result.** Nansenstr. and Karl-Marx-Str. are 600 m apart. NO₂: 15.2 and 22.4 µg/m³,
+one below the EU limit from 2030 (20), one above it. PM2.5: 12.0 and 13.1, both above the
+EU 2030 limit (10). NO₂ changes between neighbouring streets; PM2.5 barely does.
+
+**Dashboard:** [Berliner Luft · Data 2025](https://huggingface.co/spaces/petrakuhnle/berliner-luft)
+· hourly measurements 2025, 15 stations, NO₂ and PM2.5, by hour, month and station, against
+WHO, EU 2030 and EU limits in force in 2025.
+
 **Questions**
 
 1. Which hours of day and stations have the highest values?
