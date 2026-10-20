@@ -30,6 +30,40 @@ WHO, EU 2030 and EU limits in force in 2025.
 | H2 | Both pollutants highest in winter, lowest in summer, at all stations | 2 |
 | H3 | The same few stations have the most hours above the reference levels, both pollutants | 3 |
 
+## Findings
+
+**Q1 · Hours and stations** ([02](notebooks/02_peak_hours.ipynb))
+
+- NO₂ swings about 45 % from the 03:00 low to the 07:00 peak. PM2.5 stays within about 10 % all day
+- Top 10 % of station-hours: NO₂ at 5 of 15 stations, all traffic. PM2.5 at 4 of 12, in a narrow range
+- Between stations, NO₂ spans 7.6 to 26.3 µg/m³ (factor 3.5), PM2.5 8.2 to 13.6 (factor 1.7)
+- Weekend NO₂ is 14 to 25 % lower at every station, not only at traffic sites. Weekend PM2.5 moves under 4 %
+
+**Q2 · Seasons** ([03](notebooks/03_seasons.ipynb))
+
+- PM2.5 peaks in February at all 12 stations
+- NO₂ peaks in March at 9 of 15 stations (February 4, January 1, November 1). March 2025 had
+  exceptional high-pressure weather ([DWD](https://www.dwd.de/DE/presse/pressemitteilungen/DE/2025/20250331_pm_maerz_news.html))
+- Share of hours above the WHO level: NO₂ 79.1 % in February, 38.5 % in June. PM2.5 97.8 % in
+  February, 67.2 % in September
+- Excluding the New Year fireworks lowers January PM2.5 from 11.5 to 11.2 µg/m³. The pattern does not change
+
+**Q3 · Reference levels** ([02](notebooks/02_peak_hours.ipynb), [03](notebooks/03_seasons.ipynb), [04](notebooks/04_spatial.ipynb))
+
+- Annual means: all 15 stations are below the limits in force in 2025
+- Against the 2030 limits: 5 of 15 NO₂ and 9 of 12 PM2.5 stations are above
+- Against the WHO levels: 10 of 15 NO₂ and all 12 PM2.5 stations are above
+- Days above the 24-hour PM2.5 levels: 8 of 12 stations exceed the EU 2030 allowance of 18 days;
+  all 12 exceed WHO's 3 to 4 days, with 34 to 107 days
+
+**Between the stations** ([04](notebooks/04_spatial.ipynb))
+
+- The nearest other station is typically 4.6 km away (0.6 to 12.7 km)
+- Estimating a station from the others misses NO₂ by 7.1 µg/m³ on average, close to the 10 µg/m³
+  gap between the WHO level and the EU 2030 limit. PM2.5: 1.6 µg/m³
+- The city model (FAirQ 2025) reads high: +2.9 µg/m³ NO₂, +1.0 PM2.5. NO₂ is above the measurement
+  at 14 of 15 stations and
+
 ## Data
 
 [luftdaten.berlin.de](https://luftdaten.berlin.de/lqi) · Berliner Luftgütemessnetz, SenMVKU
