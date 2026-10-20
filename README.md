@@ -112,7 +112,6 @@ from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/d
     - station × season mean
     - hourly values → hours above reference levels, per station
     - daily means → days above 24-hour levels vs. allowed
-    - top station-hours ÷ annual level
 - Valid-hour coverage reported per aggregate
 
 ## Notebooks
