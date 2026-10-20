@@ -22,13 +22,11 @@ WHO, EU 2030 and EU limits in force in 2025.
 
 **Focus:** location and time of exposure, not causes.
 
-## Hypotheses
-
-| | Hypothesis | Q |
-| --- | --- | --- |
-| H1 | Top hours concentrate at a few stations, not spread across Berlin | 1 |
-| H2 | Both pollutants highest in winter, lowest in summer, at all stations | 2 |
-| H3 | The same few stations have the most hours above the reference levels, both pollutants | 3 |
+| | Hypothesis | Q | Result |
+| --- | --- | --- | --- |
+| H1 | Top hours concentrate at a few stations, not spread across Berlin | 1 | Holds for NO₂: the top 10 % of station-hours sit at 5 of 15 stations, all traffic. PM2.5 concentrates too (4 of 12), but the range is narrow |
+| H2 | Both pollutants highest in winter, lowest in summer, at all stations | 2 | Holds for PM2.5: all 12 stations peak in February. Fails for NO₂ as stated: 9 of 15 stations peak in March |
+| H3 | The same few stations have the most hours above the reference levels, both pollutants | 3 | Partly: the 4 PM2.5 top-decile stations are among the 5 NO₂ top-decile stations, all traffic. A joint ranking of hours above the levels was not computed |
 
 ## Findings
 
