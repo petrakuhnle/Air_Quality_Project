@@ -1,56 +1,38 @@
-"""Dashboard state and the views it produces, based on berlin_2025.json."""
+"""Selection model of the Berliner Luft dashboard, in Python.
 
-from dataclasses import dataclass, replace
+Mirrors the logic in app/index.html so the numbers on screen can be
+reproduced and tested from berlin_2025.json.
+"""
+
+from dataclasses import dataclass, field, replace
 
 POLLUTANTS = ("NO2", "PM2.5")
-REFERENCES = ("in_force", "eu2030", "who")
-MODES = ("Hour", "Day")
-DAYTYPES = ("weekday", "weekend", "both")
-SEASON_MONTHS = {
-    "winter": (12, 1, 2), "spring": (3, 4, 5),
-    "summer": (6, 7, 8), "autumn": (9, 10, 11),
-}
+DAYTYPES = ("both", "weekday", "weekend")
+VIEWS = ("hour", "month")
+TYPES = ("traffic", "background", "suburb")
+# Ordered from lowest to highest value
+REFERENCES = (("annual_who", "WHO"), ("annual_eu2030", "EU 2030"), ("annual_in_force", "EU now"))
 
 
 @dataclass(frozen=True)
-class State:
-    """What the user has selected.
+class Selection:
+    """What the user has chosen.
 
     Attributes:
-        pollutants: Pollutants shown, any of POLLUTANTS.
-        months: Selected months, 1 to 12.
-        days: Selected dates as "YYYY-MM-DD"; empty means the whole month.
-        hours: First and last hour of day, 0 to 23.
-        mode: "Hour" for the typical day, "Day" for daily means.
-        daytype: "weekday", "weekend" or "both".
-        stations: Selected station codes; empty means all.
-        reference: Level the status is checked against.
+        stations: Selected station codes; may be empty.
+        month: 1 to 12, or None for the full year.
+        daytype: "both", "weekday" or "weekend".
+        view: "hour" for hour of day, "month" for the year by month.
     """
 
-    pollutants: tuple = ("NO2", "PM2.5")
-    months: tuple = tuple(range(1, 13))
-    days: tuple = ()
-    hours: tuple = (0, 23)
-    mode: str = "Hour"
+    stations: frozenset = field(default_factory=lambda: frozenset({"mc174"}))
+    month: int | None = None
     daytype: str = "both"
-    stations: tuple = ()
-    reference: str = "in_force"
-
-
-class Refused(Exception):
-    """A selection the data cannot answer.
-
-    Args:
-        reason: Short text shown to the user.
-    """
-
-    def __init__(self, reason: str):
-        super().__init__(reason)
-        self.reason = reason
+    view: str = "hour"
 
 
 class BerlinerLuft:
-    """The dashboard: holds the data and the current selection.
+    """The dashboard's data and current selection.
 
     Args:
         dataset: Contents of berlin_2025.json as a dict.
@@ -58,135 +40,225 @@ class BerlinerLuft:
 
     def __init__(self, dataset: dict):
         self.d = dataset
-        self.station_codes = tuple(s["code"] for s in dataset["stations"])
-        self.pm25_stations = tuple(s["code"] for s in dataset["stations"] if s.get("pm25"))
-        self.has_hourly = "hourly" in dataset
-        self.state = State(stations=self.station_codes)
+        self.codes = tuple(s["code"] for s in dataset["stations"])
+        self.meta = {s["code"]: s for s in dataset["stations"]}
+        start = frozenset({"mc174"}) if "mc174" in self.codes else frozenset(self.codes[:1])
+        self.sel = Selection(stations=start)
+
+    # ---------- selection ----------
 
     def select(self, **changes) -> None:
         """Change the selection.
 
         Args:
-            **changes: Fields of State to change, e.g. months=(3,), mode="Day".
+            **changes: Fields of Selection, e.g. month=3, daytype="weekday".
 
         Raises:
-            Refused: If the new selection cannot be answered from the data.
+            ValueError: If a value is not one the dashboard offers.
         """
-        new = replace(self.state, **changes)
-        self._check(new)
-        self.state = new
+        new = replace(self.sel, **changes)
+        if not set(new.stations) <= set(self.codes):
+            raise ValueError("unknown station")
+        if new.month is not None and new.month not in range(1, 13):
+            raise ValueError("month must be 1 to 12 or None")
+        if new.daytype not in DAYTYPES:
+            raise ValueError("unknown day type")
+        if new.view not in VIEWS:
+            raise ValueError("unknown view")
+        self.sel = new
 
-    def _check(self, s: State) -> None:
-        """Validate a selection.
+    def select_group(self, group: str) -> None:
+        """Select all stations, one station type, or none.
 
         Args:
-            s: Selection to check.
+            group: "all", "none", or a station type ("traffic", "background", "suburb").
 
         Raises:
-            Refused: With the reason the selection is not possible.
+            ValueError: If the group is unknown.
         """
-        if not s.pollutants or not set(s.pollutants) <= set(POLLUTANTS):
-            raise Refused("unknown pollutant")
-        if s.mode not in MODES:
-            raise Refused("unknown view")
-        if s.daytype not in DAYTYPES:
-            raise Refused("unknown day type")
-        if s.reference not in REFERENCES:
-            raise Refused("unknown reference level")
-        if not s.months or not set(s.months) <= set(range(1, 13)):
-            raise Refused("month out of range")
-        lo, hi = s.hours
-        if not 0 <= lo <= hi <= 23:
-            raise Refused("hours must be between 0 and 23")
-        if s.days and len(s.months) != 1:
-            raise Refused("pick days within one month")
-        if s.mode == "Day" and s.hours != (0, 23):
-            raise Refused("the day view uses whole days, not an hour range")
+        if group == "all":
+            codes = self.codes
+        elif group == "none":
+            codes = ()
+        elif group in TYPES:
+            codes = tuple(c for c in self.codes if self.meta[c]["type"] == group)
+        else:
+            raise ValueError("unknown group")
+        self.select(stations=frozenset(codes))
 
-    def _stations(self, pollutant: str) -> tuple:
-        """Selected stations that measure a pollutant.
+    def select_one(self, code: str) -> None:
+        """Select one station alone; selecting it again clears the selection.
 
         Args:
+            code: Station code, e.g. "mc174".
+        """
+        alone = self.sel.stations == frozenset({code})
+        self.select(stations=frozenset() if alone else frozenset({code}))
+
+    def select_month(self, month: int) -> None:
+        """Select a month; selecting it again returns to the full year.
+
+        Args:
+            month: 1 to 12.
+        """
+        self.select(month=None if self.sel.month == month else month)
+
+    # ---------- helpers ----------
+
+    def measures(self, code: str, pollutant: str) -> bool:
+        """Whether a station measures a pollutant.
+
+        Args:
+            code: Station code.
             pollutant: "NO2" or "PM2.5".
+
+        Returns:
+            True if the station has data for it.
+        """
+        return pollutant == "NO2" or bool(self.meta[code].get("pm25"))
+
+    def selected(self, pollutant: str | None = None) -> list[str]:
+        """Selected stations in list order, optionally only those measuring a pollutant.
+
+        Args:
+            pollutant: "NO2", "PM2.5" or None for all selected.
 
         Returns:
             Station codes.
         """
-        chosen = self.state.stations or self.station_codes
-        if pollutant == "PM2.5":
-            return tuple(c for c in chosen if c in self.pm25_stations)
-        return tuple(chosen)
+        return [c for c in self.codes if c in self.sel.stations and (pollutant is None or self.measures(c, pollutant))]
 
-    def graph_1(self) -> dict:
-        """Line chart data: typical day by hour, or daily means.
+    def _months(self) -> list[int]:
+        return [self.sel.month] if self.sel.month else list(range(1, 13))
 
-        Returns:
-            {pollutant: {station: series}}. In Hour mode a series is
-            {daytype: [values for the hour range]}; in Day mode it is
-            {date: value}.
-        """
-        s = self.state
-        out = {}
-        for p in s.pollutants:
-            out[p] = {}
-            for st in self._stations(p):
-                if s.mode == "Hour":
-                    prof = self.d["hour_profile"][st][p]
-                    dts = ["weekday", "weekend"] if s.daytype == "both" else [s.daytype]
-                    out[p][st] = {dt: prof[dt][s.hours[0]:s.hours[1] + 1] for dt in dts}
-                else:
-                    daily = self.d["daily_mean"][st][p]
-                    out[p][st] = {d: v for d, v in sorted(daily.items())
-                                  if int(d[5:7]) in s.months and (not s.days or d in s.days)}
-        return out
+    def _daytypes(self) -> list[str]:
+        return ["weekday", "weekend"] if self.sel.daytype == "both" else [self.sel.daytype]
 
-    def graph_2(self) -> dict:
-        """Bar chart data: monthly means, or the season mean for a full season.
+    def _cells(self, code: str, pollutant: str, months: list[int]) -> list[dict]:
+        prof = self.d["hour_profile_month"][code][pollutant]
+        return [prof[str(m)][dt] for m in months if str(m) in prof for dt in self._daytypes()]
+
+    def period_mean(self, code: str, pollutant: str, months: list[int] | None = None) -> tuple[float | None, int]:
+        """Count-weighted mean of all selected hours for one station.
+
+        For the full year and all days this equals the annual mean.
+
+        Args:
+            code: Station code.
+            pollutant: "NO2" or "PM2.5".
+            months: Months to include; defaults to the selected period.
 
         Returns:
-            {pollutant: {station: {month or season: value}}}.
+            (mean in µg/m³ or None, number of valid hours).
         """
-        s = self.state
-        season = next((name for name, ms in SEASON_MONTHS.items()
-                       if set(ms) == set(s.months)), None)
+        s = n = 0
+        for c in self._cells(code, pollutant, months or self._months()):
+            for v, k in zip(c["mean"], c["n"], strict=True):
+                if v is not None:
+                    s += v * k
+                    n += k
+        return (s / n if n else None, n)
+
+    @staticmethod
+    def _mean(values: list) -> float | None:
+        vals = [v for v in values if v is not None]
+        return sum(vals) / len(vals) if vals else None
+
+    # ---------- views ----------
+
+    def hour_profile(self) -> dict:
+        """Hour-of-day chart: mean of the selected stations for each hour.
+
+        Returns:
+            {pollutant: [24 values or None]}; pollutants no selected station measures are left out.
+        """
         out = {}
-        for p in s.pollutants:
-            out[p] = {}
-            for st in self._stations(p):
-                if season:
-                    out[p][st] = {season: self.d["season_mean"][st][p][season]}
-                else:
-                    months = self.d["month_mean"][st][p]
-                    out[p][st] = {m: months[m - 1] for m in sorted(s.months)}
+        for p in POLLUTANTS:
+            codes = self.selected(p)
+            if not codes:
+                continue
+            per = []
+            for c in codes:
+                row = []
+                cells = self._cells(c, p, self._months())
+                for h in range(24):
+                    s = sum(x["mean"][h] * x["n"][h] for x in cells if x["mean"][h] is not None)
+                    n = sum(x["n"][h] for x in cells if x["mean"][h] is not None)
+                    row.append(s / n if n else None)
+                per.append(row)
+            out[p] = [self._mean([r[h] for r in per]) for h in range(24)]
         return out
+
+    def month_profile(self) -> dict:
+        """Year chart: mean of the selected stations for each month, all 12 shown.
+
+        Returns:
+            {pollutant: [12 values or None]}.
+        """
+        out = {}
+        for p in POLLUTANTS:
+            codes = self.selected(p)
+            if codes:
+                out[p] = [self._mean([self.period_mean(c, p, [m])[0] for c in codes]) for m in range(1, 13)]
+        return out
+
+    def limits_table(self) -> list[dict]:
+        """Limits chart: every station's mean for the selected period, sorted by NO2.
+
+        Returns:
+            Rows with code, selected, and per pollutant the mean and the levels it is above.
+        """
+        rows = []
+        for c in self.codes:
+            row = {"code": c, "selected": c in self.sel.stations}
+            for p in POLLUTANTS:
+                v = self.period_mean(c, p)[0] if self.measures(c, p) else None
+                above = [name for key, name in REFERENCES if v is not None and v > self.d["limits"][p][key]]
+                row[p] = {"mean": v, "above": above}
+            rows.append(row)
+        return sorted(rows, key=lambda r: -(r["NO2"]["mean"] or -1))
 
     def quick_values(self) -> dict:
-        """Lowest and highest hourly value for the selection.
+        """Lowest and highest hour in the selection.
 
         Returns:
-            Not implemented until hourly values are in the export.
-
-        Raises:
-            Refused: While the export holds no hourly values.
+            {pollutant: {"min": (value, time, station, fireworks), "max": (...)}}.
         """
-        if not self.has_hourly:
-            raise Refused("hourly values are not in the export yet")
-        raise NotImplementedError
+        out = {}
+        for p in POLLUTANTS:
+            lo = hi = None
+            for c in self.selected(p):
+                for m in self._months():
+                    for dt in self._daytypes():
+                        e = self.d["extremes"][c][p].get(str(m), {}).get(dt)
+                        if not e:
+                            continue
+                        if lo is None or e["min"][0] < lo[0]:
+                            lo = (e["min"][0], e["min"][1], c, e["min"][2])
+                        if hi is None or e["max"][0] > hi[0]:
+                            hi = (e["max"][0], e["max"][1], c, e["max"][2])
+            if lo:
+                out[p] = {"min": lo, "max": hi}
+        return out
 
-    def highlight(self) -> list[str]:
-        """Stations to highlight on the map.
+    def coverage(self) -> dict:
+        """Share of possible hours with a valid value, over the selected stations.
 
         Returns:
-            Selected station codes.
+            {pollutant: share from 0 to 1}.
         """
-        return list(self.state.stations or self.station_codes)
+        possible = sum(self.d["hours_in_period"][str(m)][dt] for m in self._months() for dt in self._daytypes())
+        out = {}
+        for p in POLLUTANTS:
+            codes = self.selected(p)
+            if codes:
+                out[p] = sum(self.period_mean(c, p)[1] for c in codes) / (possible * len(codes))
+        return out
 
-    def coverage(self) -> float | None:
-        """Mean share of valid hours over the selected stations and pollutants.
+    def missing_pm25(self) -> list[str]:
+        """Selected stations without a PM2.5 sensor, for the note at the bottom.
 
         Returns:
-            Share from 0 to 1, or None if nothing is selected.
+            Station codes.
         """
-        vals = [self.d["coverage"][st][p]
-                for p in self.state.pollutants for st in self._stations(p)]
-        return round(sum(vals) / len(vals), 4) if vals else None
+        return [c for c in self.selected() if not self.measures(c, "PM2.5")]
