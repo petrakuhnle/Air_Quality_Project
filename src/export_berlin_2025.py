@@ -209,7 +209,6 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
     # Days with fewer than 18 valid hours are dropped (EU 75 % rule).
     # hourly.csv is already filtered in 01, so this normally removes nothing.
     n = df.groupby(["station", "pollutant", "date"]).size().rename("n").reset_index()
-    excluded = n[n["n"] < MIN_VALID_HOURS]
     keep = n.loc[n["n"] >= MIN_VALID_HOURS, ["station", "pollutant", "date"]]
     df = df.merge(keep, on=["station", "pollutant", "date"])
 
@@ -322,7 +321,6 @@ def export(hourly: pd.DataFrame, path: str = "berlin_2025.json",
             "timezone": "Europe/Berlin",
             "pollutants": POLLUTANTS,
             "rule_excluded_day": "fewer than 18 valid hours",
-            "excluded_days_count": len(excluded),
         },
         "stations": station_metadata(stations, df, stations_json),
         "boundary": berlin_outline(boundary_json),
