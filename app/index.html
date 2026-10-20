@@ -6,170 +6,281 @@
 <title>Berliner Luft · Data 2025</title>
 <style>
 :root {
-  /* One shade per meaning */
-  --canvas: #F3F5F7;     /* page */
-  --surface: #FFFFFF;    /* cards and plot areas */
-  --frame: #2E3B4E;      /* dark grey blue around the charts */
-  --on-frame: #DCE3EA;   /* text on the frame */
-  --ink: #15212C;        /* text */
-  --secondary: #4A5763;  /* secondary text */
-  --line: #D9DEE3;       /* borders and gridlines */
-  --select: #0B6E79;     /* selected and actions */
-  --no2: #4c72b0;        /* NO2, as in the notebooks */
-  --pm25: #dd8452;       /* PM2.5, as in the notebooks */
-  --other: #A7B0B9;      /* stations not selected, single stations */
-  --ref: #333333;        /* reference levels, as in the notebooks */
+  /* Colour has one meaning each.
+     Data: blue NO2, orange PM2.5. Interface ("air" theme): slate for frames, selection, links, focus.
+     Context: grey for stations not selected and leader lines. Limits: dark grey. Caution: amber tag only. */
+  --canvas: #F3F5F7;      /* page */
+  --surface: #FFFFFF;     /* cards, plot areas */
+  --frame: #2E3B4E;       /* dark grey blue around charts */
+  --on-frame: #DCE3EA;    /* text on the frame, 8.8:1 */
+  --ink: #15212C;         /* text */
+  --secondary: #4A5763;   /* secondary text, 7.4:1 on white */
+  --line: #D9DEE3;        /* borders, gridlines */
+  --select: #2E3B4E;      /* interface: selection, actions, focus, 11.7:1 on white */
+  --select-tint: #E6EAF0; /* selected rows and labels */
+  --no2: #4c72b0;         /* NO2, 4.8:1 */
+  --no2-tint: #EAF0F8;
+  --pm25: #c8642e;        /* PM2.5, 3.9:1 (graphics need 3:1) */
+  --pm25-tint: #FBEFE7;
+  --other: #8A96A1;       /* not selected, leader lines, 3.0:1 */
+  --ref: #333333;         /* reference levels */
+  --band: #EEEEEE;        /* winter and summer band */
+  --care: #8A6100;        /* "read with care" tag, 5.2:1 on white */
+  --edge: clamp(16px, 3.5vw, 48px);
 }
 * { box-sizing: border-box; }
-body { margin: 0; font: 16px/23px "Atkinson Hyperlegible", system-ui, sans-serif; color: var(--ink); background: var(--canvas); }
-button { font: inherit; color: inherit; min-height: 44px; padding: 0 14px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; }
+body { margin: 0; font: 16px/24px "Atkinson Hyperlegible", system-ui, sans-serif; color: var(--ink); background: var(--canvas); }
+button { font: inherit; color: var(--ink); min-height: 36px; padding: 0 12px; border: 1.5px solid var(--other);
+         border-radius: 10px; background: var(--surface); cursor: pointer; }
 button:hover { border-color: var(--select); }
-button[aria-pressed="true"] { background: var(--select); border-color: var(--select); color: #fff; }
-button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--select); outline-offset: 2px; }
-.small { font-size: 14px; line-height: 20px; color: var(--secondary); }
-.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; }
-header { padding: 20px 24px 8px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
-h1 { margin: 0; font-size: 28px; line-height: 36px; }
-h1 span { color: var(--secondary); font-weight: 400; }
-h2 { margin: 0 0 8px; font-size: 16px; line-height: 22px; }
-.wrap { padding: 0 24px 24px; display: flex; flex-direction: column; gap: 16px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.label { font-size: 14px; color: var(--secondary); margin-right: 4px; }
-.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
-.note { font-size: 13px; line-height: 18px; color: var(--secondary); margin-top: 6px; }
-.info { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.info .pol { border-left: 4px solid; padding-left: 12px; }
-.info .pol b { display: block; }
+button[aria-pressed="true"] { background: var(--select); border-color: var(--select); color: #fff; font-weight: 700; }
+:focus-visible { outline: 3px solid var(--select); outline-offset: 2px; }
+a { color: var(--select); }
+.skip { position: absolute; left: -9999px; }
+.skip:focus { left: var(--edge); top: 8px; background: var(--surface); padding: 8px 12px; border-radius: 8px; z-index: 10; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
 
-/* Charts: dark frame, white plot areas */
-.frame { background: var(--frame); color: var(--on-frame); border-radius: 12px; padding: 16px; }
+header, .grid, footer { max-width: 1680px; margin: 0 auto; }
+header { padding: 24px var(--edge) 14px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+h1 { margin: 0; font-size: 30px; line-height: 38px; }
+h1 span { color: var(--secondary); font-weight: 400; }
+h2 { margin: 0; font-size: 18px; line-height: 26px; }
+.eyebrow { font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--secondary); margin: 0 0 2px; }
+.frame .eyebrow { color: var(--on-frame); }
+.small { font-size: 14px; line-height: 20px; color: var(--secondary); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 14px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+
+/* Layout: top row choose, middle row read, bottom row notes. Charts share one bottom line. */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; padding: 0 var(--edge) 32px;
+        grid-template-areas: "left right" "notes notes"; }
+.area-left, .area-right { display: flex; flex-direction: column; gap: 20px; }
+.area-left { grid-area: left; }
+.area-right { grid-area: right; }
+#s-when, #s-limits { flex: 1 1 auto; }   /* both charts end on the same bottom line */
+#s-notes { grid-area: notes; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.frame { background: var(--frame); color: var(--on-frame); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; }
 .frame h2 { color: #fff; }
-.frame .note { color: var(--on-frame); }
-.panel { background: var(--surface); border-radius: 8px; padding: 8px 8px 4px; margin-top: 10px; color: var(--ink); }
-.panel h3 { margin: 2px 4px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: var(--secondary); }
+.frame .head button { background: transparent; color: var(--on-frame); border-color: #6B7A8C; }
+.frame .head button:hover { border-color: #FFFFFF; }
+.frame .head button[aria-pressed="true"] { background: #FFFFFF; color: var(--ink); border-color: #FFFFFF; }
+.frame .head :focus-visible { outline-color: #FFFFFF; }
+.panel { background: var(--surface); border-radius: 10px; padding: 8px; margin-top: 10px; color: var(--ink); }
+.grow { flex: 1 1 auto; }
 .chart { width: 100%; height: auto; display: block; }
-.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 10px; margin-top: 10px; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; background: var(--surface); color: var(--ink);
+          border-radius: 10px; padding: 7px 12px; margin-top: 10px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 
-/* Station details, map */
+/* Pollutants */
+.pollutants { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pol { border-left: 5px solid; border-radius: 8px; padding: 10px 12px; }
+.pol.no2 { background: var(--no2-tint); border-color: var(--no2); }
+.pol.pm25 { background: var(--pm25-tint); border-color: var(--pm25); }
+.pol b { display: block; }
+
+/* Selection */
+fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+legend { font-size: 14px; font-weight: 700; padding: 0; margin-bottom: 6px; }
+.months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 6px; }
+.months button { padding: 0; min-height: 34px; font-size: 14px; }
+.status { font-size: 14px; line-height: 20px; border-top: 1px solid var(--line); padding-top: 10px; color: var(--secondary); }
+.status b { color: var(--ink); }
+
+/* Tables */
 table.vals { width: 100%; border-collapse: collapse; font-size: 15px; }
 table.vals td, table.vals th { text-align: left; padding: 5px 8px 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 table.vals th { font-weight: 400; font-size: 13px; color: var(--secondary); }
-.namelist { columns: 2; column-gap: 16px; margin: 0; padding: 0; list-style: none; font-size: 15px; line-height: 24px; }
-.marker { cursor: pointer; }
-.marker:hover .shape { stroke-width: 2.5; }
-.empty { padding: 24px 0; color: var(--secondary); }
-footer { color: var(--secondary); font-size: 14px; }
-.error { padding: 24px; font-size: 18px; }
-[hidden] { display: none !important; }
-@media (max-width: 860px) { .two, .info { grid-template-columns: 1fr; } .namelist { columns: 1; } }
+.above { font-weight: 700; color: var(--ink); }
+.below { color: var(--secondary); }
+.namelist { columns: 2; column-gap: 20px; margin: 8px 0 0; padding: 0; list-style: none; }
+.linkbtn { border: 0; background: none; padding: 0; min-height: 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
+           text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.linkbtn:hover { text-decoration-color: var(--select); color: var(--select); border: 0; }
+.linkbtn[aria-pressed="true"] { background: none; color: var(--ink); font-weight: 700; border: 0; }
+
+/* Limits table with bars */
+table.limits { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+table.limits caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 6px; }
+table.limits th, table.limits td { padding: 3px 4px; text-align: left; vertical-align: middle; }
+table.limits thead th { vertical-align: bottom; border-bottom: 1px solid var(--line); font-size: 13px; }
+table.limits .key { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 400; font-size: 12px; color: var(--secondary); margin-top: 2px; }
+table.limits .key span { display: inline-flex; align-items: center; gap: 4px; }
+table.limits tbody th { font-weight: 400; color: var(--secondary); width: 40%; }
+table.limits tr.on th { font-weight: 700; color: var(--ink); }
+table.limits tr.on { background: var(--select-tint); }
+.bar { position: relative; height: 20px; }
+.bar .fill { position: absolute; left: 0; top: 4px; height: 12px; background: var(--other); }
+.bar .ref { position: absolute; top: -3px; bottom: -3px; border-left: 1.5px solid var(--ref); }
+.bar .ref.eu2030 { border-left-style: dashed; }
+.bar .ref.who { border-left: 2px dotted var(--ref); }
+.bar .val { position: absolute; top: 1px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 18px;
+            color: var(--ink); background: var(--surface); padding: 0 3px; border-radius: 3px; z-index: 1; }
+tr.on .bar .val { background: var(--select-tint); }
+.bar .na { position: relative; z-index: 1; font-size: 12px; color: var(--secondary); background: var(--surface); padding: 0 3px; }
+tr.on .bar .na { background: var(--select-tint); }
+
+/* Map */
+.mapbox { display: flex; align-items: center; }
+.label-btn { cursor: pointer; }
+.label-btn .lbg { fill: var(--surface); stroke: var(--line); }
+.label-btn:hover .lbg { stroke: var(--select); }
+.label-btn:focus { outline: none; }
+.label-btn:focus-visible .lbg { stroke: var(--select); stroke-width: 3; }
+.mapfoot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+
+/* Notes at the bottom: quiet, typed by a coloured tag only */
+.notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.notes h3 { font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+.notes ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 21px; color: var(--secondary); }
+.notes li { margin-bottom: 6px; }
+.notes .care h3 { color: var(--care); }
+.notes .method h3 { color: var(--secondary); }
+.notes .about h3 { color: var(--select); }
+.notes b { color: var(--ink); }
+footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
+.error { max-width: 1680px; margin: 0 auto; padding: 24px var(--edge); font-size: 18px; }
+
+/* Smaller laptops and tablets: one column in reading order */
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pol" "map" "station" "sel" "when" "limits" "notes"; }
+  .area-left, .area-right { display: contents; }
+  #s-pollutants { grid-area: pol; } #s-map { grid-area: map; } #s-station { grid-area: station; }
+  #s-select { grid-area: sel; } #s-when { grid-area: when; } #s-limits { grid-area: limits; }
+  .notes { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) { .pollutants { grid-template-columns: 1fr; } .months { grid-template-columns: repeat(6, 1fr); } .namelist { columns: 1; } }
 </style>
 </head>
 <body>
+<a class="skip" href="#s-when">Skip to charts</a>
 <header>
   <h1>Berliner Luft <span>· Data 2025</span></h1>
   <div class="small">Hourly measurements · 15 stations · Berliner Luftgütemessnetz</div>
 </header>
+<div id="error" class="error" role="alert" hidden></div>
 
-<div id="app" class="wrap">
-  <div id="error" class="error card" hidden></div>
-
-  <section class="card info" aria-label="Pollutants">
-    <div class="pol" style="border-color: var(--no2)">
-      <b>Nitrogen dioxide (NO₂), mainly traffic</b>
-      <span class="small">Mainly traffic exhaust · affects the airways · measured at all 15 stations</span>
-    </div>
-    <div class="pol" style="border-color: var(--pm25)">
-      <b>Fine particles (PM2.5)</b>
-      <span class="small">Particles under 2.5 µm · heart and blood vessels · measured at 12 of 15 stations</span>
-    </div>
-  </section>
-
-  <section class="two">
-    <div class="card" id="station-card"></div>
-    <div class="card">
-      <div class="row" style="justify-content:space-between;margin-bottom:8px">
-        <h2 style="margin:0">Stations</h2>
-        <div class="row" id="groups"></div>
+<main class="grid" id="main">
+  <div class="area-left">
+    <section class="card" id="s-pollutants" aria-labelledby="h-pol">
+      <div class="head" style="margin-bottom:8px">
+        <div><p class="eyebrow">What is measured</p><h2 id="h-pol" class="sr">Pollutants</h2></div>
+        <a class="small" href="#about">Why these two, and not ozone?</a>
       </div>
-      <svg id="map" viewBox="0 0 440 330" role="group" aria-label="Map of Berlin with stations; press a station to select it" class="chart"></svg>
-      <div class="legend" style="padding:6px 0">
-        <span><svg width="12" height="12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="#15212C" stroke-width="1.5"/></svg>traffic</span>
-        <span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="none" stroke="#15212C" stroke-width="1.5"/></svg>background</span>
-        <span><svg width="12" height="12"><polygon points="6,1 11,6 6,11 1,6" fill="none" stroke="#15212C" stroke-width="1.5"/></svg>suburb</span>
-        <span><svg width="12" height="12"><circle cx="6" cy="6" r="5" fill="#0B6E79"/></svg>selected</span>
+      <div class="pollutants">
+        <div class="pol no2">
+          <b>Nitrogen dioxide (NO₂)</b>
+          <span class="small">Mainly traffic exhaust · affects the airways · all 15 stations</span>
+        </div>
+        <div class="pol pm25">
+          <b>Fine particles (PM2.5)</b>
+          <span class="small">Particles under 2.5 µm · affects heart and blood vessels · 12 of 15 stations</span>
+        </div>
       </div>
-      <div class="note">Click a station to select it alone. Outline © OpenStreetMap contributors.</div>
-    </div>
-  </section>
+    </section>
 
-  <section class="card">
-    <div class="row" style="gap:20px">
-      <div class="row"><span class="label">Period</span><span id="period" class="row"></span></div>
-      <div class="row"><span class="label">Days</span>
-        <button id="dt-both" type="button">All days</button>
-        <button id="dt-weekday" type="button">Mon–Fri</button>
-        <button id="dt-weekend" type="button">Sat–Sun</button>
+    <section class="card" id="s-select" aria-labelledby="h-sel">
+      <p class="eyebrow">Choose a time</p>
+      <h2 id="h-sel" style="margin-bottom:10px">Period and days</h2>
+      <fieldset>
+        <legend>Period</legend>
+        <div class="row"><span id="full-year"></span></div>
+        <div id="months" class="months"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Days</legend>
+        <div class="row" id="daytypes"></div>
+      </fieldset>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="frame" id="s-when" aria-labelledby="h-when">
+      <div class="head" style="margin-bottom:0">
+        <div><p class="eyebrow">When</p><h2 id="h-when">By hour of day</h2></div>
+        <div class="row" id="views" role="group" aria-label="Chart view"></div>
       </div>
-    </div>
-    <div id="selection" class="note"></div>
-  </section>
-
-  <section class="two">
-    <div class="frame">
-      <h2>By hour of day</h2>
-      <div id="g1"></div>
-      <div id="g1-legend" class="legend"></div>
-      <div class="note">Mean for each hour of the selected period and stations. No limit line: the limits are annual means, not hourly values.</div>
-    </div>
-    <div class="frame">
-      <h2 id="g2-title">Against the limits</h2>
-      <div id="g2"></div>
-      <div class="legend">
-        <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#333333" stroke-width="1.2"/></svg>EU now</span>
-        <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#333333" stroke-width="1.2" stroke-dasharray="6 4"/></svg>EU 2030</span>
-        <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#333333" stroke-width="1.2" stroke-dasharray="1.5 3"/></svg>WHO</span>
-        <span><svg width="14" height="10"><rect width="14" height="10" fill="#A7B0B9"/></svg>other stations</span>
+      <div class="panel"><svg id="g-when" class="chart" role="img" aria-labelledby="g-when-desc"></svg>
+        <p id="g-when-desc" class="sr"></p></div>
+      <div id="when-legend" class="legend"></div>
+      <div class="panel grow" style="padding:8px 12px;display:flex;align-items:flex-end">
+        <table class="vals" id="quick" aria-label="Lowest and highest hour in the selection"></table>
       </div>
-      <div id="g2-note" class="note"></div>
+    </section>
+  </div>
+
+  <div class="area-right">
+    <section class="card" id="s-map" aria-labelledby="h-map">
+      <div class="head">
+        <div><p class="eyebrow">Choose a place</p><h2 id="h-map">Stations</h2></div>
+        <div class="row" id="groups" role="group" aria-label="Select a group of stations"></div>
+      </div>
+      <div class="mapbox">
+        <svg id="map" viewBox="0 0 600 400" class="chart" role="group" aria-label="Map of Berlin. Each station name is a button."></svg>
+      </div>
+      <div class="mapfoot">
+        <span class="small" style="color:var(--select)">Click on individual station to display more details.</span>
+        <span class="small">Outline © OpenStreetMap contributors.</span>
+      </div>
+    </section>
+
+    <section class="card" id="s-station" aria-live="polite"></section>
+
+    <section class="frame" id="s-limits" aria-labelledby="h-limits">
+      <p class="eyebrow">Against the limits</p>
+      <h2 id="h-limits">All stations, <span id="limits-period"></span></h2>
+      <div class="panel grow" style="padding:10px 12px"><table class="limits" id="g-limits"></table></div>
+    </section>
+  </div>
+
+  <section class="card" id="s-notes" aria-labelledby="h-notes">
+    <h2 id="h-notes" class="sr">Notes</h2>
+    <div class="notes">
+      <div class="care"><h3>Read with care</h3><ul id="care-list"></ul></div>
+      <div class="method"><h3>Method</h3><ul>
+        <li>Hour view: mean for each hour of the selected period, days and stations.</li>
+        <li>Month view: monthly means for the selected stations and days. Click a month to select it; click it again for the full year.</li>
+        <li>Limits: mean of the selected period for every station, sorted by NO₂. For 2025 and all days this is the annual mean.</li>
+        <li>Days with fewer than 18 valid hours removed. Gaps are not filled. Times are the start of the hour, Berlin time.</li>
+      </ul></div>
+      <div class="about" id="about"><h3>About the pollutants</h3><ul>
+        <li><b>Why NO₂ and PM2.5:</b> they carry the largest health burden, and both have EU 2030 limits and WHO guideline levels to check each value against.</li>
+        <li><b>Why not ozone:</b> ozone is not emitted directly. It forms from other pollutants in sunlight and is usually highest away from traffic, because exhaust near busy roads breaks it down again. Adding it would mix opposite patterns and complicate conclusions about where and when exposure is highest; it needs weather data to read correctly.</li>
+        <li><b>Also not included:</b> the network measures more, for example PM10 and ozone. PM10 overlaps with PM2.5, its finest part. This project fetched NO₂ and PM2.5 only.</li>
+        <li><b>Possible next steps:</b> ozone with weather data, traffic counts, more years for trends, and a satellite NO₂ comparison.</li>
+      </ul></div>
     </div>
   </section>
+</main>
 
-  <section class="two">
-    <div class="card">
-      <h2>Lowest and highest hour</h2>
-      <table class="vals" id="quick"></table>
-    </div>
-    <div class="card">
-      <h2>Coverage</h2>
-      <div id="coverage" class="small"></div>
-    </div>
-  </section>
-
-  <footer>
-    luftdaten.berlin.de – Berliner Luftgütemessnetz, SenMVKU · dl-de/by-2-0 · own calculation.
-    Measured values only. Days with fewer than 18 valid hours removed. Ozone not included: it forms in sunlight and peaks away from traffic.
-  </footer>
-</div>
+<footer>
+  Source: luftdaten.berlin.de – Berliner Luftgütemessnetz, SenMVKU · dl-de/by-2-0 · own calculation. Measured values only.
+</footer>
 
 <script>
 "use strict";
 
-// Labels, colours and reference lines as in notebooks 02 to 04
 const POLS = ["NO2", "PM2.5"];
-const LABEL = {"NO2": "NO₂ · mainly traffic exhaust · airways", "PM2.5": "PM2.5 · fine particles · heart and blood vessels"};
+const LABEL = {"NO2": "NO₂ · mainly traffic exhaust · airways", "PM2.5": "PM2.5 · fine particles · affects heart and blood vessels"};
 const SHORT = {"NO2": "NO₂", "PM2.5": "PM2.5"};
-const COLOUR = {"NO2": "#4c72b0", "PM2.5": "#dd8452"};
-const OTHER = "#A7B0B9", REF = "#333333", SELECT = "#0B6E79", INK = "#15212C";
-const REFS = [["annual_in_force", "EU now", null], ["annual_eu2030", "EU 2030", "6 4"], ["annual_who", "WHO", "1.5 3"]];
-const MONTH_NAME = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const COLOUR = {"NO2": "#4c72b0", "PM2.5": "#c8642e"};
+const OTHER = "#8A96A1", REF = "#333333", SELECT = "#2E3B4E", SELECT_TINT = "#E6EAF0", INK = "#15212C", MUTED = "#4A5763", GRID = "#D9DEE3", BAND = "#EEEEEE";
+// Ordered from lowest to highest value, as they sit on the axis
+const REFS = [["annual_who", "WHO", "who", "1.5 3"], ["annual_eu2030", "EU 2030", "eu2030", "5 3"], ["annual_in_force", "EU now", "now", null]];
+const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTH_TICK = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 const TYPES = [["traffic", "Traffic"], ["background", "Background"], ["suburb", "Suburb"]];
-const DAYTYPE_LABEL = {both: "all days", weekday: "Mon–Fri", weekend: "Sat–Sun"};
+const DAYS = [["both", "All days"], ["weekday", "Mon–Fri"], ["weekend", "Sat–Sun"]];
+const FONT = 12;
 
 let D = null;
-const S = { stations: new Set(["mc174"]), month: null, daytype: "both" };   // month null = full year
+let EXTRA = 0;   // extra chart height so both chart frames end on one line without empty space
+// Default: one station, full year, all days, hour view
+const S = {stations: new Set(["mc174"]), month: null, daytype: "both", view: "hour"};
 
+// ---------- helpers ----------
 const el = id => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
 function svgEl(tag, attrs, parent) {
@@ -178,9 +289,14 @@ function svgEl(tag, attrs, parent) {
   if (parent) parent.appendChild(n);
   return n;
 }
+function text(parent, x, y, str, attrs = {}) {
+  const t = svgEl("text", {x, y, "font-size": FONT, fill: MUTED, ...attrs}, parent);
+  t.textContent = str;
+  return t;
+}
 const fmt = v => (v === null || v === undefined) ? "–" : Number(v).toFixed(1);
 const pad2 = n => String(n).padStart(2, "0");
-function stationLabel(s) {                      // "Street, District" -> "Street (District)"
+function stationLabel(s) {                          // "Street, District" -> "Street (District)"
   const n = s.name || s.code, i = n.indexOf(", ");
   return i > 0 ? `${n.slice(0, i)} (${n.slice(i + 2)})` : n;
 }
@@ -188,222 +304,265 @@ const street = s => (s.name || s.code).split(",")[0];
 const byCode = c => D.stations.find(s => s.code === c);
 const measures = (c, p) => p === "NO2" || !!byCode(c).pm25;
 const selected = () => D.stations.map(s => s.code).filter(c => S.stations.has(c));
-const months = () => S.month ? [S.month] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const monthsOf = () => S.month ? [S.month] : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const daytypes = () => S.daytype === "both" ? ["weekday", "weekend"] : [S.daytype];
-const periodName = () => (S.month ? MONTH_NAME[S.month - 1] + " 2025" : "2025") + (S.daytype === "both" ? "" : ", " + DAYTYPE_LABEL[S.daytype]);
+const daysName = () => DAYS.find(d => d[0] === S.daytype)[1];
+const periodName = () => S.month ? `${MONTH[S.month - 1]} 2025` : "2025";
 const isAnnual = () => !S.month && S.daytype === "both";
+const meanOf = a => { const v = a.filter(x => x != null); return v.length ? v.reduce((p, q) => p + q, 0) / v.length : null; };
+function selectOne(code) { S.stations = (S.stations.size === 1 && S.stations.has(code)) ? new Set() : new Set([code]); render(); }
+function selectMonth(m) { S.month = S.month === m ? null : m; render(); }
 
-// ---------- aggregation from hour_profile_month (mean and count per month, day type, hour) ----------
-function cells(code, pol) {
-  const out = [];
-  const m = D.hour_profile_month[code][pol];
-  months().forEach(mm => daytypes().forEach(dt => { if (m[String(mm)]) out.push(m[String(mm)][dt]); }));
+// Station symbol by type: square traffic, circle background, diamond suburb
+function symbol(parent, type, x, y, r, on) {
+  const a = {fill: on ? SELECT : "#FFFFFF", stroke: on ? SELECT : INK, "stroke-width": 1.5};
+  if (type === "traffic") return svgEl("rect", {x: x - r, y: y - r, width: 2 * r, height: 2 * r, ...a}, parent);
+  if (type === "suburb") return svgEl("polygon", {points: `${x},${y - r - 1.5} ${x + r + 1.5},${y} ${x},${y + r + 1.5} ${x - r - 1.5},${y}`, ...a}, parent);
+  return svgEl("circle", {cx: x, cy: y, r, ...a}, parent);
+}
+
+// ---------- aggregation (count-weighted, from hour_profile_month) ----------
+function cellsFor(code, pol, months) {
+  const m = D.hour_profile_month[code][pol], out = [];
+  months.forEach(mm => daytypes().forEach(dt => { if (m[String(mm)]) out.push(m[String(mm)][dt]); }));
   return out;
 }
-function profile(code, pol) {          // 24 count-weighted means, null where no hours
+function hourProfile(code, pol) {
+  const cs = cellsFor(code, pol, monthsOf());
   return Array.from({length: 24}, (_, h) => {
     let s = 0, n = 0;
-    cells(code, pol).forEach(c => { if (c.mean[h] !== null) { s += c.mean[h] * c.n[h]; n += c.n[h]; } });
+    cs.forEach(c => { if (c.mean[h] !== null) { s += c.mean[h] * c.n[h]; n += c.n[h]; } });
     return n ? s / n : null;
   });
 }
-function periodMean(code, pol) {       // mean of all selected hours; equals the annual mean for 2025, all days
+function meanOver(code, pol, months) {
   let s = 0, n = 0;
-  cells(code, pol).forEach(c => c.mean.forEach((v, h) => { if (v !== null) { s += v * c.n[h]; n += c.n[h]; } }));
-  return n ? {mean: s / n, n} : {mean: null, n: 0};
-}
-function meanOf(arr) {
-  const v = arr.filter(x => x !== null && x !== undefined);
-  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  cellsFor(code, pol, months).forEach(c => c.mean.forEach((v, h) => { if (v !== null) { s += v * c.n[h]; n += c.n[h]; } }));
+  return {mean: n ? s / n : null, n};
 }
 function possibleHours() {
   let n = 0;
-  months().forEach(mm => daytypes().forEach(dt => { n += D.hours_in_period[String(mm)][dt]; }));
+  monthsOf().forEach(mm => daytypes().forEach(dt => { n += D.hours_in_period[String(mm)][dt]; }));
   return n;
 }
 
 // ---------- chart helpers ----------
-const W = 560, L = 48, R = 14, T = 14;
 const stepFor = m => m <= 20 ? 5 : m <= 60 ? 10 : m <= 150 ? 25 : 50;
-const niceMax = (vals, refs) => { const m = Math.max(1, ...vals.filter(v => v != null), ...refs); return Math.ceil((m * 1.1) / stepFor(m)) * stepFor(m); };
-function panel(box, pol, height) {
-  const wrap = document.createElement("div");
-  wrap.className = "panel";
-  const h = document.createElement("h3");
-  h.textContent = LABEL[pol];
-  wrap.appendChild(h);
-  const svg = svgEl("svg", {viewBox: `0 0 ${W} ${height}`, class: "chart", role: "img", "aria-label": LABEL[pol]});
-  wrap.appendChild(svg);
-  box.appendChild(wrap);
-  return svg;
+const niceMax = (vals, refs = []) => { const m = Math.max(1, ...vals.filter(v => v != null), ...refs); return Math.ceil((m * 1.1) / stepFor(m)) * stepFor(m); };
+function yAxis(svg, box, yMax, label) {
+  const y = v => box.t + (box.b - box.t) * (1 - v / yMax);
+  for (let v = 0; v <= yMax + 1e-9; v += stepFor(yMax)) {
+    svgEl("line", {x1: box.l, x2: box.r, y1: y(v), y2: y(v), stroke: GRID}, svg);
+    text(svg, box.l - 8, y(v) + 4, v, {"text-anchor": "end"});
+  }
+  const mid = (box.t + box.b) / 2;
+  text(svg, 14, mid, label, {"text-anchor": "middle", transform: `rotate(-90 14 ${mid})`});
+  return y;
 }
 function linePath(values, x, y) {
   let d = "", on = false;
   values.forEach((v, i) => { if (v == null) { on = false; return; } d += (on ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1) + " "; on = true; });
   return d;
 }
-const legendLine = (label, colour, width, dash) =>
-  `<span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="${colour}" stroke-width="${width}"${dash ? ` stroke-dasharray="${dash}"` : ""}/></svg>${label}</span>`;
-
-// Graph 1: by hour of day for the selected stations
-function drawHours() {
-  const box = el("g1");
-  box.innerHTML = "";
-  const H = 230, B = 40;
-  const x = i => L + i * (W - L - R) / 23;
+const lastPoint = v => { for (let i = v.length - 1; i >= 0; i--) if (v[i] != null) return i; return -1; };
+function endLabels(svg, series, x, y) {               // pollutant names at line ends, not colour alone
+  const p = series.map(s => ({pol: s.pol, i: lastPoint(s.mean)})).filter(s => s.i >= 0)
+    .map(s => ({...s, ty: y(series.find(q => q.pol === s.pol).mean[s.i])})).sort((a, b) => a.ty - b.ty);
+  for (let k = 1; k < p.length; k++) if (p[k].ty - p[k - 1].ty < 15) p[k].ty = p[k - 1].ty + 15;
+  p.forEach(q => text(svg, x(q.i) + 8, q.ty + 4, SHORT[q.pol], {fill: COLOUR[q.pol], "font-weight": 700}));
+}
+const legendLine = (label, colour) =>
+  `<span><svg width="26" height="10" aria-hidden="true"><line x1="0" y1="5" x2="26" y2="5" stroke="${colour}" stroke-width="3"/></svg>${label}</span>`;
+function seriesFor(fn) {
   const sel = selected();
-  if (!sel.length) { box.innerHTML = "<div class='panel empty'>No station selected.</div>"; el("g1-legend").innerHTML = ""; return; }
-  POLS.forEach(p => {
+  return POLS.map(p => {
     const codes = sel.filter(c => measures(c, p));
-    const svg = panel(box, p, H);
-    if (!codes.length) { svgEl("text", {x: L, y: 40, "font-size": 13, fill: "#4A5763"}, svg).textContent = "Not measured at the selected stations."; return; }
-    const per = codes.map(c => profile(c, p));
-    const mean = Array.from({length: 24}, (_, h) => meanOf(per.map(s => s[h])));
-    const yMax = niceMax(per.flat(), []);
-    const y = v => T + (H - T - B) * (1 - v / yMax);
-    for (let v = 0; v <= yMax + 1e-9; v += stepFor(yMax)) {
-      svgEl("line", {x1: L, x2: W - R, y1: y(v), y2: y(v), stroke: "#D9DEE3", "stroke-width": 0.8}, svg);
-      svgEl("text", {x: L - 6, y: y(v) + 4, "text-anchor": "end", "font-size": 11, fill: "#4A5763"}, svg).textContent = v;
-    }
-    for (let h = 0; h < 24; h += 2) svgEl("text", {x: x(h), y: H - 22, "text-anchor": "middle", "font-size": 11, fill: "#4A5763"}, svg).textContent = pad2(h);
-    svgEl("text", {x: (L + W - R) / 2, y: H - 4, "text-anchor": "middle", "font-size": 11, fill: "#4A5763"}, svg).textContent = "hour of day";
-    svgEl("text", {x: 12, y: (T + H - B) / 2, "font-size": 11, fill: "#4A5763", "text-anchor": "middle", transform: `rotate(-90 12 ${(T + H - B) / 2})`}, svg).textContent = "µg/m³";
-    if (codes.length > 1) per.forEach(v => svgEl("path", {d: linePath(v, x, y), fill: "none", stroke: OTHER, "stroke-width": 1}, svg));
-    svgEl("path", {d: linePath(mean, x, y), fill: "none", stroke: COLOUR[p], "stroke-width": 2.5}, svg);
-  });
-  el("g1-legend").innerHTML = legendLine(sel.length > 1 ? `mean of ${sel.length} stations` : stationLabel(byCode(sel[0])), INK, 2.5) +
-    (sel.length > 1 ? legendLine("single stations", OTHER, 1) : "");
+    return {pol: p, n: codes.length, mean: fn(p, codes)};
+  }).filter(s => s.n);
 }
 
-// Graph 2: every station as a bar for the same period, selected ones in colour, three reference lines (as notebook 02)
-function drawBars() {
-  const box = el("g2");
-  box.innerHTML = "";
-  POLS.forEach(p => {
-    const codes = D.stations.filter(s => measures(s.code, p)).map(s => s.code);
-    const rows = codes.map(c => ({code: c, ...periodMean(c, p)})).filter(r => r.mean !== null).sort((a, b) => b.mean - a.mean);
-    const rowH = 18, top = 26, H = top + rows.length * rowH + 30;
-    const svg = panel(box, p, H);
-    const lim = D.limits[p];
-    const refs = REFS.map(([k]) => lim[k]);
-    const xMax = niceMax(rows.map(r => r.mean), refs);
-    const NAME_W = 190;
-    const x = v => L + NAME_W + v * (W - L - NAME_W - R) / xMax;
-    rows.forEach((r, i) => {
-      const yy = top + i * rowH, on = S.stations.has(r.code);
-      svgEl("text", {x: L + NAME_W - 8, y: yy + 12, "text-anchor": "end", "font-size": 11, fill: on ? INK : "#4A5763", "font-weight": on ? 700 : 400}, svg)
-        .textContent = stationLabel(byCode(r.code));
-      svgEl("rect", {x: x(0), y: yy + 3, width: x(r.mean) - x(0), height: rowH - 6, fill: on ? COLOUR[p] : OTHER}, svg);
-      svgEl("text", {x: x(r.mean) + 4, y: yy + 12, "font-size": 10, fill: INK, "font-family": "IBM Plex Mono, monospace"}, svg).textContent = fmt(r.mean);
-    });
-    REFS.forEach(([k, name, dash]) => {
-      const v = lim[k];
-      svgEl("line", {x1: x(v), x2: x(v), y1: top - 4, y2: top + rows.length * rowH, stroke: REF, "stroke-width": 1.2, "stroke-dasharray": dash}, svg);
-      svgEl("text", {x: x(v) + 3, y: top - 8, "font-size": 10, fill: REF}, svg).textContent = `${name}: ${v}`;
-    });
-    svgEl("text", {x: (L + NAME_W + W - R) / 2, y: H - 6, "text-anchor": "middle", "font-size": 11, fill: "#4A5763"}, svg)
-      .textContent = isAnnual() ? "µg/m³, annual mean" : `µg/m³, mean · ${periodName()}`;
-  });
-  el("g2-title").textContent = `Against the limits · ${periodName()}`;
-  el("g2-note").textContent = isAnnual()
-    ? "Annual means, the value the limits are set for."
-    : "The limits are annual means. A mean for part of the year is shown against them as a yardstick, as in notebook 03.";
-}
-
-// ---------- station details, quick values, coverage ----------
-function renderStation() {
-  const box = el("station-card");
+// ---------- one chart, two views: hour of day or month ----------
+function drawWhen() {
+  const svg = el("g-when"), W = 600, H = 300 + EXTRA, box = {l: 48, r: W - 60, t: 14, b: H - 42};
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = "";
   const sel = selected();
-  if (!sel.length) { box.innerHTML = "<h2>Station</h2><div class='empty'>No station selected. Click a station on the map, or choose a group.</div>"; return; }
-  if (sel.length > 3) {
-    box.innerHTML = `<h2>${sel.length} stations selected</h2><ul class="namelist">` +
-      sel.map(c => `<li>${stationLabel(byCode(c))}</li>`).join("") + "</ul>";
-    return;
+  el("h-when").textContent = S.view === "hour" ? "By hour of day" : "By month, 2025";
+  if (!sel.length) {
+    text(svg, box.l, 40, "No station selected. Click a station on the map.", {"font-size": 14});
+    el("when-legend").innerHTML = ""; el("g-when-desc").textContent = "No station selected."; return;
   }
-  box.innerHTML = sel.map(c => {
-    const s = byCode(c);
-    const rows = POLS.map(p => {
-      if (!measures(c, p)) return `<tr><td>${SHORT[p]}</td><td colspan="2" class="small">not measured here</td></tr>`;
-      const a = D.annual_mean[c][p];
-      const status = REFS.map(([k, name]) => `${name} ${D.limits[p][k]}: <b>${a > D.limits[p][k] ? "above" : "below"}</b>`).join(" · ");
-      return `<tr><td>${SHORT[p]}</td><td class="mono">${fmt(a)}</td><td class="small">${status}</td></tr>`;
-    }).join("");
-    const pm = s.pm25 ? `<div class="small" style="margin-top:8px">PM2.5 days above the 24-hour level: EU 2030 ${D.limits["PM2.5"].days_over_eu2030[c]} (18 allowed) · WHO ${D.limits["PM2.5"].days_over_who[c]} (3–4 allowed)</div>` : "";
-    return `<h2>${stationLabel(s)}</h2><div class="small">${c} · ${s.type}</div>
-      <table class="vals" style="margin-top:10px"><tr><th></th><th>annual mean 2025</th><th>status</th></tr>${rows}</table>${pm}
-      <div class="small" style="margin-top:6px">Nearest other station: ${s.distance_nearest_km ?? "–"} km · measuring height: ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</div>`;
-  }).join("<hr style='border:0;border-top:1px solid var(--line);margin:14px 0'>");
+  let series, x, ticks, xLabel, yLabel;
+  if (S.view === "hour") {
+    series = seriesFor((p, codes) => { const per = codes.map(c => hourProfile(c, p)); return Array.from({length: 24}, (_, h) => meanOf(per.map(s => s[h]))); });
+    x = h => box.l + h * (box.r - box.l) / 23;
+    ticks = Array.from({length: 8}, (_, k) => [k * 3, pad2(k * 3)]);
+    xLabel = "hour of day"; yLabel = "µg/m³";
+  } else {
+    series = seriesFor((p, codes) => MONTH.map((_, i) => meanOf(codes.map(c => meanOver(c, p, [i + 1]).mean))));
+    const slot = (box.r - box.l) / 12;
+    x = i => box.l + (i + 0.5) * slot;
+    [[0, 2], [5, 3], [11, 1]].forEach(([a, n]) => svgEl("rect", {x: box.l + a * slot, y: box.t, width: n * slot, height: box.b - box.t, fill: BAND}, svg));
+    ticks = MONTH_TICK.map((t, i) => [i, t]);
+    xLabel = "month · click to select"; yLabel = "µg/m³, monthly mean";
+  }
+  const y = yAxis(svg, box, niceMax(series.flatMap(s => s.mean)), yLabel);
+  ticks.forEach(([i, t]) => text(svg, x(i), H - 24, t, {"text-anchor": "middle",
+    fill: S.view === "month" && S.month === i + 1 ? SELECT : MUTED, "font-weight": S.view === "month" && S.month === i + 1 ? 700 : 400}));
+  text(svg, (box.l + box.r) / 2, H - 4, xLabel, {"text-anchor": "middle"});
+  if (S.view === "month" && S.month) {
+    const slot = (box.r - box.l) / 12;
+    svgEl("rect", {x: box.l + (S.month - 1) * slot + 1, y: box.t, width: slot - 2, height: box.b - box.t, fill: "none", stroke: SELECT, "stroke-width": 2, rx: 4}, svg);
+  }
+  series.forEach(s => {
+    svgEl("path", {d: linePath(s.mean, x, y), fill: "none", stroke: COLOUR[s.pol], "stroke-width": 3}, svg);
+    if (S.view === "month") s.mean.forEach((v, i) => { if (v != null) svgEl("circle", {cx: x(i), cy: y(v), r: 3.5, fill: COLOUR[s.pol]}, svg); });
+  });
+  endLabels(svg, series, x, y);
+  if (S.view === "month") {                             // click a month column to select it (keyboard: Period buttons)
+    const slot = (box.r - box.l) / 12;
+    MONTH.forEach((n, i) => {
+      const r = svgEl("rect", {x: box.l + i * slot, y: box.t, width: slot, height: box.b - box.t + 26, fill: "transparent", style: "cursor:pointer", "aria-hidden": "true"}, svg);
+      svgEl("title", {}, r).textContent = S.month === i + 1 ? `${n}: back to full year` : `Select ${n}`;
+      r.onclick = () => selectMonth(i + 1);
+    });
+  }
+  const pmMissing = sel.filter(c => !measures(c, "PM2.5")).length;
+  const who = sel.length === 1 ? stationLabel(byCode(sel[0])) : `mean of ${sel.length} stations` + (pmMissing && pmMissing < sel.length ? ` (PM2.5: ${sel.length - pmMissing})` : "");
+  el("when-legend").innerHTML = series.map(s => legendLine(LABEL[s.pol], COLOUR[s.pol])).join("") + `<span class="small">${who}</span>`;
+  el("g-when-desc").textContent = series.map(s => {
+    const v = s.mean.filter(q => q != null), hi = s.mean.indexOf(Math.max(...v)), lo = s.mean.indexOf(Math.min(...v));
+    const at = i => S.view === "hour" ? `${pad2(i)}:00` : MONTH[i];
+    return `${SHORT[s.pol]} highest at ${at(hi)} with ${fmt(s.mean[hi])}, lowest at ${at(lo)} with ${fmt(s.mean[lo])} µg/m³.`;
+  }).join(" ") + ` ${who}, ${periodName()}, ${daysName()}.`;
 }
 
+// ---------- against the limits: both pollutants, shared rows ----------
+function keyLine(dash) {
+  return `<svg width="20" height="8" aria-hidden="true"><line x1="0" y1="4" x2="20" y2="4" stroke="${REF}" stroke-width="${dash === "1.5 3" ? 2 : 1.5}"${dash ? ` stroke-dasharray="${dash}"` : ""}/></svg>`;
+}
+function drawLimits() {
+  const months = monthsOf();
+  const rows = D.stations.map(s => ({code: s.code, v: Object.fromEntries(POLS.map(p => [p, measures(s.code, p) ? meanOver(s.code, p, months).mean : null]))}))
+    .sort((a, b) => (b.v.NO2 ?? -1) - (a.v.NO2 ?? -1));
+  const scale = Object.fromEntries(POLS.map(p => [p, niceMax(rows.map(r => r.v[p]), REFS.map(([k]) => D.limits[p][k])) * 1.25]));
+  const pct = (v, p) => (v / scale[p] * 100).toFixed(1) + "%";
+  const key = REFS.map(([, n, , dash]) => `<span>${keyLine(dash)}${n}</span>`).join("");
+  const head = POLS.map(p => `<th scope="col"><span style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</span><span class="key">${key}</span></th>`).join("");
+  const body = rows.map(r => {
+    const on = S.stations.has(r.code);
+    const cells = POLS.map(p => {
+      const v = r.v[p];
+      const refs = REFS.map(([k, , cls]) => `<i class="ref ${cls}" style="left:${pct(D.limits[p][k], p)}" aria-hidden="true"></i>`).join("");
+      if (v == null) return `<td><div class="bar">${refs}<span class="na">not measured</span></div></td>`;
+      const above = REFS.filter(([k]) => v > D.limits[p][k]).map(([k, n]) => `${n} ${D.limits[p][k]}`);
+      return `<td><div class="bar">${refs}<span class="fill" style="width:${pct(v, p)};${on ? `background:${COLOUR[p]}` : ""}"></span>` +
+        `<span class="val" style="left:calc(${pct(v, p)} + 3px)">${fmt(v)}</span>` +
+        `<span class="sr">µg/m³, ${above.length ? "above " + above.join(", ") : "below all three limits"}</span></div></td>`;
+    }).join("");
+    return `<tr class="${on ? "on" : ""}"><th scope="row"><button type="button" class="linkbtn" data-code="${r.code}" aria-pressed="${on}">` +
+      `${stationLabel(byCode(r.code))}</button></th>${cells}</tr>`;
+  }).join("");
+  const unit = isAnnual() ? "µg/m³, annual mean 2025" : `µg/m³, mean · ${periodName()} · ${daysName()}`;
+  el("g-limits").innerHTML = `<caption>${unit}, sorted by NO₂. Click a station to select it.</caption>` +
+    `<thead><tr><th scope="col">Station</th>${head}</tr></thead><tbody>${body}</tbody>`;
+  el("g-limits").querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
+  el("limits-period").textContent = isAnnual() ? "annual mean 2025" : `${periodName()} · ${daysName()}`;
+}
+
+// ---------- quick values ----------
 function renderQuick() {
   const sel = selected();
   const rows = POLS.map(p => {
     let lo = null, hi = null;
-    sel.filter(c => measures(c, p)).forEach(c => {
-      months().forEach(mm => daytypes().forEach(dt => {
-        const e = (D.extremes[c][p][String(mm)] || {})[dt];
-        if (!e) return;
-        if (!lo || e.min[0] < lo.v) lo = {v: e.min[0], t: e.min[1], fw: e.min[2], c};
-        if (!hi || e.max[0] > hi.v) hi = {v: e.max[0], t: e.max[1], fw: e.max[2], c};
-      }));
-    });
-    const cell = r => r ? `<span class="mono">${fmt(r.v)} µg/m³</span><br><span class="small">${stationLabel(byCode(r.c))}, ${+r.t.slice(8, 10)} ${MONTH_NAME[+r.t.slice(5, 7) - 1]} ${r.t.slice(11)}${r.fw ? " · New Year fireworks" : ""}</span>` : "–";
-    return `<tr><td>${SHORT[p]}</td><td>${cell(lo)}</td><td>${cell(hi)}</td></tr>`;
+    sel.filter(c => measures(c, p)).forEach(c => monthsOf().forEach(mm => daytypes().forEach(dt => {
+      const e = (D.extremes[c][p][String(mm)] || {})[dt];
+      if (!e) return;
+      if (!lo || e.min[0] < lo.v) lo = {v: e.min[0], t: e.min[1], fw: e.min[2], c};
+      if (!hi || e.max[0] > hi.v) hi = {v: e.max[0], t: e.max[1], fw: e.max[2], c};
+    })));
+    const when = r => `${+r.t.slice(8, 10)} ${MONTH[+r.t.slice(5, 7) - 1]}, ${r.t.slice(11)}`;
+    const cell = r => r ? `<span class="mono">${fmt(r.v)} µg/m³</span><br><span class="small">${when(r)}` +
+      `${sel.length > 1 ? " · " + street(byCode(r.c)) : ""}${r.fw ? " · New Year fireworks" : ""}</span>` : `<span class="small">–</span>`;
+    return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th><td>${cell(lo)}</td><td>${cell(hi)}</td></tr>`;
   }).join("");
-  el("quick").innerHTML = `<tr><th></th><th>lowest</th><th>highest</th></tr>${rows}`;
+  el("quick").innerHTML = `<tr><th scope="col"><span class="sr">Pollutant</span></th><th scope="col">Lowest hour</th><th scope="col">Highest hour</th></tr>${rows}`;
 }
 
-function renderCoverage() {
-  const sel = selected(), possible = possibleHours();
-  const parts = POLS.map(p => {
-    const codes = sel.filter(c => measures(c, p));
-    if (!codes.length) return `${SHORT[p]}: no selected station measures it`;
-    const valid = codes.reduce((a, c) => a + periodMean(c, p).n, 0), total = possible * codes.length;
-    return `${SHORT[p]} ${(valid / total * 100).toFixed(1)} % (${valid.toLocaleString("en")} of ${total.toLocaleString("en")} station-hours)`;
-  });
-  el("coverage").innerHTML = (sel.length ? parts.join("<br>") : "No station selected.") +
-    `<div class="note">${periodName()}: ${possible.toLocaleString("en")} hours. Gaps are shown, not filled.</div>`;
+// ---------- selected station(s) ----------
+function renderStation() {
+  const box = el("s-station"), sel = selected();
+  if (!sel.length) {
+    box.innerHTML = `<p class="eyebrow">Selected</p><h2>No station selected</h2><p class="small">Click a station on the map or in the limits table, or choose a group.</p>`;
+    return;
+  }
+  if (sel.length > 3) {
+    box.innerHTML = `<p class="eyebrow">Selected</p><h2>${sel.length} stations</h2><ul class="namelist">` +
+      sel.map(c => `<li><button type="button" class="linkbtn" data-code="${c}">${stationLabel(byCode(c))}</button>` +
+        `${measures(c, "PM2.5") ? "" : ' <span class="small">· NO₂ only</span>'}</li>`).join("") + "</ul>";
+    box.querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
+    return;
+  }
+  box.innerHTML = `<p class="eyebrow">Selected</p>` + sel.map(c => {
+    const s = byCode(c);
+    const rows = POLS.map(p => {
+      if (!measures(c, p)) return `<tr><th scope="row">${SHORT[p]}</th><td colspan="4" class="small">not measured here</td></tr>`;
+      const a = D.annual_mean[c][p];
+      return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th><td class="mono">${fmt(a)}</td>` +
+        REFS.map(([k]) => { const up = a > D.limits[p][k]; return `<td class="${up ? "above" : "below"}">${up ? "above" : "below"} ${D.limits[p][k]}</td>`; }).join("") + "</tr>";
+    }).join("");
+    const pm = s.pm25 ? `<p class="small" style="margin:8px 0 0">PM2.5 days above the 24-hour level: <b>WHO ${D.limits["PM2.5"].days_over_who[c]}</b> (3–4 allowed) · <b>EU 2030 ${D.limits["PM2.5"].days_over_eu2030[c]}</b> (18 allowed)</p>` : "";
+    return `<h2>${stationLabel(s)}</h2><div class="small">${c} · ${s.type} station · nearest other station ${s.distance_nearest_km ?? "–"} km · measuring height ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</div>
+      <table class="vals" style="margin-top:8px"><tr><th scope="col"><span class="sr">Pollutant</span></th><th scope="col">Annual mean 2025, µg/m³</th>` +
+      REFS.map(([, n]) => `<th scope="col">${n}</th>`).join("") + `</tr>${rows}</table>${pm}`;
+  }).join(`<hr style="border:0;border-top:1px solid var(--line);margin:14px 0">`);
 }
 
 // ---------- controls ----------
-function renderGroups() {
-  const box = el("groups");
-  box.innerHTML = "";
+function pressButton(label, pressed, onclick, attrs = {}) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.textContent = label;
+  b.setAttribute("aria-pressed", pressed ? "true" : "false");
+  Object.entries(attrs).forEach(([k, v]) => b.setAttribute(k, v));
+  b.onclick = onclick;
+  return b;
+}
+function renderControls() {
+  const fy = el("full-year");
+  fy.innerHTML = "";
+  fy.appendChild(pressButton("Full year", S.month === null, () => { S.month = null; render(); }));
+  const ms = el("months");
+  ms.innerHTML = "";
+  MONTH.forEach((n, i) => ms.appendChild(pressButton(n, S.month === i + 1, () => selectMonth(i + 1), {"aria-label": `${n} 2025`})));
+  const dt = el("daytypes");
+  dt.innerHTML = "";
+  DAYS.forEach(([k, n]) => dt.appendChild(pressButton(n, S.daytype === k, () => { S.daytype = k; render(); })));
+  const vw = el("views");
+  vw.innerHTML = "";
+  [["hour", "By hour"], ["month", "By month"]].forEach(([k, n]) => vw.appendChild(pressButton(n, S.view === k, () => { S.view = k; render(); })));
+  const gr = el("groups");
+  gr.innerHTML = "";
   const all = D.stations.map(s => s.code);
-  const groups = [["All", all], ...TYPES.map(([t, name]) => [name, D.stations.filter(s => s.type === t).map(s => s.code)]), ["None", []]];
-  groups.forEach(([name, codes]) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = name;
-    b.style.minHeight = "36px";
+  [["All", all], ...TYPES.map(([t, n]) => [n, D.stations.filter(s => s.type === t).map(s => s.code)]), ["None", []]].forEach(([n, codes]) => {
     const same = codes.length === S.stations.size && codes.every(c => S.stations.has(c));
-    b.setAttribute("aria-pressed", same ? "true" : "false");
-    b.onclick = () => { S.stations = new Set(codes); render(); };
-    box.appendChild(b);
+    gr.appendChild(pressButton(n, same, () => { S.stations = new Set(codes); render(); }));
   });
+  const sel = selected(), possible = possibleHours();
+  const cov = POLS.map(p => {
+    const codes = sel.filter(c => measures(c, p));
+    if (!codes.length) return null;
+    const valid = codes.reduce((a, c) => a + meanOver(c, p, monthsOf()).n, 0);
+    return `${SHORT[p]} ${(valid / (possible * codes.length) * 100).toFixed(1)} %`;
+  }).filter(Boolean);
+  const who = sel.length === 0 ? "no station" : sel.length === 1 ? stationLabel(byCode(sel[0])) : `${sel.length} stations`;
+  el("status").innerHTML = `Showing <b>${periodName()}</b> · <b>${daysName()}</b> · <b>${who}</b>` +
+    (cov.length ? `<br>Hours with a valid value: ${cov.join(" · ")} (of ${possible.toLocaleString("en")} per station)` : "");
 }
 
-function renderPeriod() {
-  const box = el("period");
-  box.innerHTML = "";
-  [["Full year", null], ...MONTH_NAME.map((n, i) => [n, i + 1])].forEach(([name, m]) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = name;
-    b.style.minHeight = "36px";
-    b.setAttribute("aria-pressed", S.month === m ? "true" : "false");
-    b.onclick = () => { S.month = m; render(); };
-    box.appendChild(b);
-  });
-  ["both", "weekday", "weekend"].forEach(d => el("dt-" + d).setAttribute("aria-pressed", S.daytype === d ? "true" : "false"));
-  let note = `${periodName()} · ${selected().length} station${selected().length === 1 ? "" : "s"}`;
-  if (S.month === 3) note += " · March 2025 had exceptional high-pressure weather (DWD); the NO₂ peak may not recur.";
-  el("selection").textContent = note;
-}
-
-// Map: Berlin outline and stations; a click selects that station alone
+// ---------- map: outline, stations, every name in a column with a leader line ----------
 function renderMap() {
-  const svg = el("map");
+  const svg = el("map"), W = 600, H = 400, COL = 168, LH = 24, GAP = 3;
   svg.innerHTML = "";
   const pts = D.stations.filter(s => s.lat != null && s.lng != null);
   const ring = (D.boundary || []).flat();
@@ -411,48 +570,104 @@ function renderMap() {
   if (!lats.length) return;
   const minLa = Math.min(...lats), maxLa = Math.max(...lats), minLo = Math.min(...lngs), maxLo = Math.max(...lngs);
   const k = Math.cos((minLa + maxLa) / 2 * Math.PI / 180);
-  const pad = 18, w = 440 - 2 * pad, h = 330 - 2 * pad;
-  const sx = (maxLo - minLo) * k || 1e-6, sy = (maxLa - minLa) || 1e-6, sc = Math.min(w / sx, h / sy);
-  const X = (lng) => pad + (lng - minLo) * k * sc + (w - sx * sc) / 2;
-  const Y = (lat) => pad + (maxLa - lat) * sc + (h - sy * sc) / 2;
+  const mx0 = COL + 20, mw = W - 2 * mx0, mh = H - 30;
+  const sx = (maxLo - minLo) * k || 1e-6, sy = (maxLa - minLa) || 1e-6, sc = Math.min(mw / sx, mh / sy);
+  const X = lng => mx0 + (lng - minLo) * k * sc + (mw - sx * sc) / 2;
+  const Y = lat => 15 + (maxLa - lat) * sc + (mh - sy * sc) / 2;
   (D.boundary || []).forEach(r => svgEl("path", {d: "M" + r.map(p => `${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join("L") + "Z",
-    fill: "#F3F5F7", stroke: REF, "stroke-width": 0.8}, svg));
-  pts.forEach(s => {
-    const on = S.stations.has(s.code), x = X(s.lng), y = Y(s.lat), r = 6;
-    const g = svgEl("g", {class: "marker", role: "button", tabindex: 0, "aria-pressed": on ? "true" : "false",
-      "aria-label": `${stationLabel(s)}, ${s.type}${on ? ", selected" : ""}`}, svg);
-    const a = {class: "shape", fill: on ? SELECT : "#FFFFFF", stroke: on ? SELECT : INK, "stroke-width": 1.5};
-    if (s.type === "traffic") svgEl("rect", {x: x - r, y: y - r, width: 2 * r, height: 2 * r, ...a}, g);
-    else if (s.type === "suburb") svgEl("polygon", {points: `${x},${y - r - 1} ${x + r + 1},${y} ${x},${y + r + 1} ${x - r - 1},${y}`, ...a}, g);
-    else svgEl("circle", {cx: x, cy: y, r, ...a}, g);
-    svgEl("circle", {cx: x, cy: y, r: 14, fill: "transparent"}, g);          // larger click target
-    if (on) {
-      const t = svgEl("text", {x: x + 10, y: y + 4, "font-size": 11, fill: INK, stroke: "#FFFFFF", "stroke-width": 3, "paint-order": "stroke"}, g);
-      t.textContent = street(s);
-    }
-    const pick = () => { S.stations = (on && S.stations.size === 1) ? new Set() : new Set([s.code]); render(); };
-    g.onclick = pick;
-    g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+    fill: "#F3F5F7", stroke: REF, "stroke-width": 1}, svg));
+
+  const lines = svgEl("g", {"aria-hidden": "true"}, svg);
+  const marks = svgEl("g", {"aria-hidden": "true"}, svg);
+  const labels = svgEl("g", {}, svg);
+  const items = pts.map(s => ({s, x: X(s.lng), y: Y(s.lat), on: S.stations.has(s.code)}));
+  const midX = (Math.min(...items.map(i => i.x)) + Math.max(...items.map(i => i.x))) / 2;
+
+  // Two columns, names stacked top to bottom without overlap
+  [["left", items.filter(i => i.x < midX)], ["right", items.filter(i => i.x >= midX)]].forEach(([side, list]) => {
+    list.sort((a, b) => a.y - b.y);
+    let prev = -Infinity;
+    list.forEach(i => { i.ly = Math.max(i.y - LH / 2, prev + LH + GAP); prev = i.ly; });
+    const overflow = prev + LH - (H - 4);
+    if (overflow > 0) for (let j = list.length - 1, lim = H - 4 - LH; j >= 0; j--) { list[j].ly = Math.min(list[j].ly, lim); lim = list[j].ly - LH - GAP; }
+    if (list.length && list[0].ly < 4) { const d = 4 - list[0].ly; list.forEach(i => { i.ly += d; }); }
+    list.forEach(i => {
+      const cy = i.ly + LH / 2;
+      const g = svgEl("g", {class: "label-btn", role: "button", tabindex: 0, "aria-pressed": i.on ? "true" : "false",
+        "aria-label": `${stationLabel(i.s)}, ${i.s.type} station${i.s.pm25 ? "" : ", NO₂ only"}`}, labels);
+      svgEl("title", {}, g).textContent = `${stationLabel(i.s)} · ${i.s.type}`;
+      const bg = svgEl("rect", {class: "lbg", y: i.ly, height: LH, rx: 5}, g);
+      const t = text(g, 0, cy + 4.5, street(i.s), {fill: INK, "font-size": 13, "font-weight": i.on ? 700 : 400});
+      const w = Math.min(COL, t.getBBox().width + 36);                       // label fits its name
+      const lx = side === "left" ? 4 : W - w - 4, ex = side === "left" ? lx + w : lx;
+      bg.setAttribute("x", lx); bg.setAttribute("width", w);
+      t.setAttribute("x", lx + 26);
+      if (i.on) bg.setAttribute("style", `fill:${SELECT_TINT};stroke:${SELECT};stroke-width:1.5`);
+      symbol(g, i.s.type, lx + 13, cy, 4.5, i.on);
+      const bend = side === "left" ? Math.max(ex + 10, COL + 14) : Math.min(ex - 10, W - COL - 14);
+      svgEl("polyline", {points: `${ex},${cy} ${bend},${cy} ${i.x},${i.y}`, fill: "none", stroke: i.on ? SELECT : OTHER, "stroke-width": i.on ? 1.5 : 1}, lines);
+      symbol(marks, i.s.type, i.x, i.y, 5.5, i.on);
+      const pick = () => selectOne(i.s.code);
+      g.onclick = pick;
+      g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+      // the symbol on the map is clickable too
+      const hit = svgEl("circle", {cx: i.x, cy: i.y, r: 12, fill: "transparent", style: "cursor:pointer"}, marks);
+      svgEl("title", {}, hit).textContent = stationLabel(i.s);
+      hit.onclick = pick;
+    });
   });
+  marks.removeAttribute("aria-hidden");
+  marks.setAttribute("aria-hidden", "true");
+}
+
+// ---------- notes at the bottom ----------
+function renderNotes() {
+  const sel = selected(), items = [];
+  if (S.view === "hour") items.push("No limit line in the hour view: the limits are annual means, not hourly values.");
+  if (!isAnnual()) items.push("Means for part of the year are compared with annual limits only as a yardstick.");
+  const missing = sel.filter(c => !measures(c, "PM2.5")).map(c => stationLabel(byCode(c)));
+  if (missing.length) items.push(`PM2.5 is not measured at ${missing.join(", ")}.` +
+    (missing.length < sel.length ? ` The PM2.5 values use the other ${sel.length - missing.length} station${sel.length - missing.length === 1 ? "" : "s"}.` : " Only NO₂ is shown."));
+  items.push("March 2025 had exceptional high-pressure weather (DWD). The NO₂ peak in March may not recur.");
+  items.push("One year of data: no trends. Patterns fit traffic but do not prove causes.");
+  el("care-list").innerHTML = items.map(t => `<li>${t}</li>`).join("");
+}
+
+// Give the free space at the bottom of the "When" frame to the chart itself
+function fitWhen() {
+  const panel = el("quick").parentElement, svg = el("g-when");
+  const spare = panel.clientHeight - el("quick").offsetHeight - 18;
+  if (spare > 8 && svg.clientWidth) {
+    EXTRA = Math.min(260, Math.round(spare * 600 / svg.clientWidth));
+    drawWhen();
+  }
 }
 
 function render() {
-  renderGroups(); renderMap(); renderStation(); renderPeriod();
-  drawHours(); drawBars(); renderQuick(); renderCoverage();
+  EXTRA = 0;
+  renderControls();
+  renderMap();
+  renderStation();
+  drawWhen();
+  renderQuick();
+  drawLimits();
+  renderNotes();
+  requestAnimationFrame(fitWhen);
 }
 
 fetch("berlin_2025.json")
   .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
   .then(data => {
     D = data;
+    let t;
+    window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(render, 150); });
     if (!byCode("mc174")) S.stations = new Set(D.stations.length ? [D.stations[0].code] : []);
-    ["both", "weekday", "weekend"].forEach(d => { el("dt-" + d).onclick = () => { S.daytype = d; render(); }; });
     render();
   })
   .catch(() => {
     el("error").hidden = false;
     el("error").textContent = "No data: berlin_2025.json is missing or unreadable. Start the page from the app folder with python3 -m http.server.";
-    document.querySelectorAll("section").forEach(s => { s.hidden = true; });
+    el("main").hidden = true;
   });
 </script>
 </body>
