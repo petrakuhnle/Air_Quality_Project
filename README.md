@@ -163,15 +163,31 @@ from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/d
 | [03_seasons](notebooks/03_seasons.ipynb) | Monthly means, hours above the WHO level, days above 24-hour levels, fireworks check |
 | [04_spatial](notebooks/04_spatial.ipynb) | Station distances, estimating a station from the others, city model at stations, share of Berlin's area above each level |
 
+## Dashboard
+
+[Berliner Luft · Data 2025](https://huggingface.co/spaces/petrakuhnle/berliner-luft), a static Hugging Face Space.
+
+- **Select:** one station, a station type or all, on the map or in the limits table · one month or the
+  full year · all days, Mon–Fri or Sat–Sun
+- **Shows:** NO₂ and PM2.5 by hour of day or by month · all stations against the WHO level, the EU 2030
+  limit and the EU limit in force in 2025 · lowest and highest hour · share of valid hours
+- **Built:** `src/load_hourly.py` reads `data/processed/hourly.csv` → `src/export_berlin_2025.py` writes
+  `app/berlin_2025.json` (means and counts per station, month, day type and hour) → `app/index.html`
+  computes every view from that file. `src/berliner_luft.py` repeats the page's logic in Python for checks
+- **Map outline:** © OpenStreetMap contributors, ODbL
+
 ## How to run
 
     uv sync
     uv run python fetch.py        # only if raw/ is empty
-    # then run notebooks 01 → 04 in order
+    # run notebooks 01 → 04 in order, then export the dashboard data:
+    uv run python -c "import sys; sys.path.insert(0, 'src'); from load_hourly import read_hourly; from export_berlin_2025 import export; export(read_hourly(), 'app/berlin_2025.json', stations_json='data/raw/stations.json', boundary_json='data/raw/berlin_boundary.json')"
+    # open the dashboard locally:
+    cd app && python3 -m http.server     # then http://localhost:8000
 
 ## Stack
 
-Python 3.14 · uv · pandas · numpy · matplotlib · seaborn
+Python 3.14 · uv · pandas · numpy · matplotlib · seaborn · dashboard: HTML, CSS and JavaScript, no libraries
 
 ## Status
 
