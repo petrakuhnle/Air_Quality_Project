@@ -14,7 +14,7 @@
   --frame: #2E3B4E;       /* dark grey blue around charts */
   --on-frame: #DCE3EA;    /* text on the frame, 8.8:1 */
   --ink: #15212C;         /* text */
-  --secondary: #4A5763;   /* secondary text, 7.4:1 on white */
+  --secondary: #505357;   /* secondary text, neutral grey, 7.9:1 on white */
   --line: #D9DEE3;        /* borders, gridlines */
   --select: #2E3B4E;      /* interface: selection, actions, focus, 11.7:1 on white */
   --select-tint: #E6EAF0; /* selected rows and labels */
@@ -120,6 +120,8 @@ table.limits tr.on { background: var(--select-tint); }
 .bar .val { position: absolute; top: 1px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 18px;
             color: var(--ink); background: var(--surface); padding: 0 3px; border-radius: 3px; z-index: 1; }
 tr.on .bar .val { background: var(--select-tint); }
+.refname { position: absolute; transform: translateX(-50%); font-size: 11px; line-height: 13px; font-weight: 400;
+           color: var(--ink); background: var(--surface); padding: 0 2px; white-space: nowrap; }
 .bar .na { position: relative; z-index: 1; font-size: 12px; color: var(--secondary); background: var(--surface); padding: 0 3px; }
 tr.on .bar .na { background: var(--select-tint); }
 
@@ -130,29 +132,41 @@ tr.on .bar .na { background: var(--select-tint); }
 .label-btn:hover .lbg { stroke: var(--select); }
 .label-btn:focus { outline: none; }
 .label-btn:focus-visible .lbg { stroke: var(--select); stroke-width: 3; }
-.mapfoot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+#group-note { margin: 8px 0 0; }
+/* All and None are secondary to the station types */
+#groups .quiet { color: var(--secondary); border-color: var(--line); }
+#groups .quiet[aria-pressed="true"] { color: #fff; border-color: var(--select); }
 
 /* Notes at the bottom: quiet, typed by a coloured tag only */
-.notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.notes h3 { font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
-.notes ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 21px; color: var(--secondary); }
-.notes li { margin-bottom: 6px; }
-.notes .care h3 { color: var(--care); }
-.notes .method h3 { color: var(--secondary); }
-.notes .about h3 { color: var(--select); }
+#s-notes .lead { margin: 2px 0 14px; font-size: 14px; color: var(--secondary); }
+.notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+.note-col h3 { display: flex; align-items: center; gap: 8px; font-size: 15px; line-height: 22px; margin: 0 0 8px; color: var(--ink); }
+.note-col .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--select); flex: none; }
+.note-col.care .dot { background: var(--care); }
+.notes ul { margin: 0; padding-left: 0; list-style: none; font-size: 14px; line-height: 20px; color: var(--secondary); }
+.notes li { margin-bottom: 8px; }
 .notes b { color: var(--ink); }
+.notes .fine { margin: 8px 0 0; font-size: 13px; line-height: 18px; color: var(--secondary); }
+table.levels { border-collapse: collapse; font-size: 14px; width: 100%; }
+table.levels caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 4px; }
+table.levels th, table.levels td { padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); text-align: left; }
+table.levels thead th, table.levels tr:first-child th { font-weight: 400; font-size: 13px; color: var(--secondary); }
+table.levels td { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink); }
+table.levels .no2 { color: var(--no2); font-weight: 700; }
+table.levels .pm25 { color: var(--pm25); font-weight: 700; }
 footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
 .error { max-width: 1680px; margin: 0 auto; padding: 24px var(--edge); font-size: 18px; }
 
+@media (max-width: 1400px) and (min-width: 1101px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Smaller laptops and tablets: one column in reading order */
 @media (max-width: 1100px) {
   .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pol" "map" "station" "sel" "when" "limits" "notes"; }
   .area-left, .area-right { display: contents; }
   #s-pollutants { grid-area: pol; } #s-map { grid-area: map; } #s-station { grid-area: station; }
   #s-select { grid-area: sel; } #s-when { grid-area: when; } #s-limits { grid-area: limits; }
-  .notes { grid-template-columns: 1fr; }
+  .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 640px) { .pollutants { grid-template-columns: 1fr; } .months { grid-template-columns: repeat(6, 1fr); } .namelist { columns: 1; } }
+@media (max-width: 640px) { .notes { grid-template-columns: 1fr; } .pollutants { grid-template-columns: 1fr; } .months { grid-template-columns: repeat(6, 1fr); } .namelist { columns: 1; } }
 </style>
 </head>
 <body>
@@ -168,22 +182,20 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
     <section class="card" id="s-pollutants" aria-labelledby="h-pol">
       <div class="head" style="margin-bottom:8px">
         <div><p class="eyebrow">What is measured</p><h2 id="h-pol" class="sr">Pollutants</h2></div>
-        <a class="small" href="#about">Why these two, and not ozone?</a>
       </div>
       <div class="pollutants">
         <div class="pol no2">
           <b>Nitrogen dioxide (NO₂)</b>
-          <span class="small">Mainly traffic exhaust · affects the airways · all 15 stations</span>
+          <span class="small">Mainly traffic exhaust · affects the airways · measured at all 15 stations</span>
         </div>
         <div class="pol pm25">
           <b>Fine particles (PM2.5)</b>
-          <span class="small">Particles under 2.5 µm · affects heart and blood vessels · 12 of 15 stations</span>
+          <span class="small">Particles under 2.5 µm · affects heart and blood vessels · measured at 12 of 15 stations</span>
         </div>
       </div>
     </section>
 
     <section class="card" id="s-select" aria-labelledby="h-sel">
-      <p class="eyebrow">Choose a time</p>
       <h2 id="h-sel" style="margin-bottom:10px">Period and days</h2>
       <fieldset>
         <legend>Period</legend>
@@ -214,16 +226,13 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
   <div class="area-right">
     <section class="card" id="s-map" aria-labelledby="h-map">
       <div class="head">
-        <div><p class="eyebrow">Choose a place</p><h2 id="h-map">Stations</h2></div>
+        <div><h2 id="h-map">Stations</h2></div>
         <div class="row" id="groups" role="group" aria-label="Select a group of stations"></div>
       </div>
       <div class="mapbox">
         <svg id="map" viewBox="0 0 600 400" class="chart" role="group" aria-label="Map of Berlin. Each station name is a button."></svg>
       </div>
-      <div class="mapfoot">
-        <span class="small" style="color:var(--select)">Click on individual station to display more details.</span>
-        <span class="small">Outline © OpenStreetMap contributors.</span>
-      </div>
+      <p class="small" id="group-note" hidden></p>
     </section>
 
     <section class="card" id="s-station" aria-live="polite"></section>
@@ -232,31 +241,51 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
       <p class="eyebrow">Against the limits</p>
       <h2 id="h-limits">All stations, <span id="limits-period"></span></h2>
       <div class="panel grow" style="padding:10px 12px"><table class="limits" id="g-limits"></table></div>
+      <div class="legend" id="limits-legend"></div>
     </section>
   </div>
 
   <section class="card" id="s-notes" aria-labelledby="h-notes">
-    <h2 id="h-notes" class="sr">Notes</h2>
+    <h2 id="h-notes">Good to know</h2>
+    <p class="lead">What to keep in mind when reading the charts above.</p>
     <div class="notes">
-      <div class="care"><h3>Read with care</h3><ul id="care-list"></ul></div>
-      <div class="method"><h3>Method</h3><ul>
-        <li>Hour view: mean for each hour of the selected period, days and stations.</li>
-        <li>Month view: monthly means for the selected stations and days. Click a month to select it; click it again for the full year.</li>
-        <li>Limits: mean of the selected period for every station, sorted by NO₂. For 2025 and all days this is the annual mean.</li>
-        <li>Days with fewer than 18 valid hours removed. Gaps are not filled. Times are the start of the hour, Berlin time.</li>
-      </ul></div>
-      <div class="about" id="about"><h3>About the pollutants</h3><ul>
-        <li><b>Why NO₂ and PM2.5:</b> they carry the largest health burden, and both have EU 2030 limits and WHO guideline levels to check each value against.</li>
-        <li><b>Why not ozone:</b> ozone is not emitted directly. It forms from other pollutants in sunlight and is usually highest away from traffic, because exhaust near busy roads breaks it down again. Adding it would mix opposite patterns and complicate conclusions about where and when exposure is highest; it needs weather data to read correctly.</li>
-        <li><b>Also not included:</b> the network measures more, for example PM10 and ozone. PM10 overlaps with PM2.5, its finest part. This project fetched NO₂ and PM2.5 only.</li>
-        <li><b>Possible next steps:</b> ozone with weather data, traffic counts, more years for trends, and a satellite NO₂ comparison.</li>
-      </ul></div>
+      <div class="note-col care">
+        <h3><span class="dot" aria-hidden="true"></span>Before you compare</h3>
+        <ul id="care-list"></ul>
+      </div>
+      <div class="note-col">
+        <h3><span class="dot" aria-hidden="true"></span>The limits</h3>
+        <table class="levels">
+          <caption>Annual means, µg/m³</caption>
+          <tr><th scope="col"></th><th scope="col">WHO</th><th scope="col">EU 2030</th><th scope="col">EU now</th></tr>
+          <tr><th scope="row" class="no2">NO₂</th><td>10</td><td>20</td><td>40</td></tr>
+          <tr><th scope="row" class="pm25">PM2.5</th><td>5</td><td>10</td><td>25</td></tr>
+        </table>
+        <p class="fine">EU 2030 applies from 2030; compliance is assessed from 2026. WHO levels are guidelines, not law.</p>
+      </div>
+      <div class="note-col">
+        <h3><span class="dot" aria-hidden="true"></span>Why NO₂ and PM2.5</h3>
+        <ul>
+          <li><b>Largest health burden.</b> Both have EU limits and WHO levels.</li>
+          <li><b>No ozone.</b> It forms in sunlight and is lowest at busy roads, the opposite pattern.</li>
+          <li><b>Not included.</b> PM10, which overlaps with PM2.5.</li>
+        </ul>
+      </div>
+      <div class="note-col">
+        <h3><span class="dot" aria-hidden="true"></span>How it is calculated</h3>
+        <ul>
+          <li><b>Means</b> per hour or month, for the stations, period and days you select.</li>
+          <li><b>Limits chart:</b> each station's mean for the period. 2025 with all days is the annual mean.</li>
+          <li><b>Gaps:</b> days with fewer than 18 valid hours removed, not filled.</li>
+        </ul>
+      </div>
     </div>
   </section>
 </main>
 
 <footer>
-  Source: luftdaten.berlin.de – Berliner Luftgütemessnetz, SenMVKU · dl-de/by-2-0 · own calculation. Measured values only.
+  Data: luftdaten.berlin.de – Berliner Luftgütemessnetz, SenMVKU, retrieved 2026-10-07 · licence dl-de/by-2-0 · own calculation, measured values only.
+  Map outline © OpenStreetMap contributors, ODbL.
 </footer>
 
 <script>
@@ -266,7 +295,7 @@ const POLS = ["NO2", "PM2.5"];
 const LABEL = {"NO2": "NO₂ · mainly traffic exhaust · airways", "PM2.5": "PM2.5 · fine particles · affects heart and blood vessels"};
 const SHORT = {"NO2": "NO₂", "PM2.5": "PM2.5"};
 const COLOUR = {"NO2": "#4c72b0", "PM2.5": "#c8642e"};
-const OTHER = "#8A96A1", REF = "#333333", SELECT = "#2E3B4E", SELECT_TINT = "#E6EAF0", INK = "#15212C", MUTED = "#4A5763", GRID = "#D9DEE3", BAND = "#EEEEEE";
+const OTHER = "#8A96A1", REF = "#333333", SELECT = "#2E3B4E", SELECT_TINT = "#E6EAF0", INK = "#15212C", MUTED = "#505357", GRID = "#D9DEE3", BAND = "#EEEEEE";
 // Ordered from lowest to highest value, as they sit on the axis
 const REFS = [["annual_who", "WHO", "who", "1.5 3"], ["annual_eu2030", "EU 2030", "eu2030", "5 3"], ["annual_in_force", "EU now", "now", null]];
 const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -278,7 +307,7 @@ const FONT = 12;
 let D = null;
 let EXTRA = 0;   // extra chart height so both chart frames end on one line without empty space
 // Default: one station, full year, all days, hour view
-const S = {stations: new Set(["mc174"]), month: null, daytype: "both", view: "hour"};
+const S = {stations: new Set(), month: null, daytype: "both", view: "hour"};   // stations: all, set on load
 
 // ---------- helpers ----------
 const el = id => document.getElementById(id);
@@ -340,11 +369,6 @@ function meanOver(code, pol, months) {
   cellsFor(code, pol, months).forEach(c => c.mean.forEach((v, h) => { if (v !== null) { s += v * c.n[h]; n += c.n[h]; } }));
   return {mean: n ? s / n : null, n};
 }
-function possibleHours() {
-  let n = 0;
-  monthsOf().forEach(mm => daytypes().forEach(dt => { n += D.hours_in_period[String(mm)][dt]; }));
-  return n;
-}
 
 // ---------- chart helpers ----------
 const stepFor = m => m <= 20 ? 5 : m <= 60 ? 10 : m <= 150 ? 25 : 50;
@@ -404,7 +428,7 @@ function drawWhen() {
     x = i => box.l + (i + 0.5) * slot;
     [[0, 2], [5, 3], [11, 1]].forEach(([a, n]) => svgEl("rect", {x: box.l + a * slot, y: box.t, width: n * slot, height: box.b - box.t, fill: BAND}, svg));
     ticks = MONTH_TICK.map((t, i) => [i, t]);
-    xLabel = "month · click to select"; yLabel = "µg/m³, monthly mean";
+    xLabel = "month"; yLabel = "µg/m³, monthly mean";
   }
   const y = yAxis(svg, box, niceMax(series.flatMap(s => s.mean)), yLabel);
   ticks.forEach(([i, t]) => text(svg, x(i), H - 24, t, {"text-anchor": "middle",
@@ -429,7 +453,7 @@ function drawWhen() {
   }
   const pmMissing = sel.filter(c => !measures(c, "PM2.5")).length;
   const who = sel.length === 1 ? stationLabel(byCode(sel[0])) : `mean of ${sel.length} stations` + (pmMissing && pmMissing < sel.length ? ` (PM2.5: ${sel.length - pmMissing})` : "");
-  el("when-legend").innerHTML = series.map(s => legendLine(LABEL[s.pol], COLOUR[s.pol])).join("") + `<span class="small">${who}</span>`;
+  el("when-legend").innerHTML = series.map(s => legendLine(SHORT[s.pol], COLOUR[s.pol])).join("") + `<span class="small">${who}</span>`;
   el("g-when-desc").textContent = series.map(s => {
     const v = s.mean.filter(q => q != null), hi = s.mean.indexOf(Math.max(...v)), lo = s.mean.indexOf(Math.min(...v));
     const at = i => S.view === "hour" ? `${pad2(i)}:00` : MONTH[i];
@@ -447,8 +471,11 @@ function drawLimits() {
     .sort((a, b) => (b.v.NO2 ?? -1) - (a.v.NO2 ?? -1));
   const scale = Object.fromEntries(POLS.map(p => [p, niceMax(rows.map(r => r.v[p]), REFS.map(([k]) => D.limits[p][k])) * 1.25]));
   const pct = (v, p) => (v / scale[p] * 100).toFixed(1) + "%";
-  const key = REFS.map(([, n, , dash]) => `<span>${keyLine(dash)}${n}</span>`).join("");
-  const head = POLS.map(p => `<th scope="col"><span style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</span><span class="key">${key}</span></th>`).join("");
+  const head = POLS.map(p => `<th scope="col"><span style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</span></th>`).join("");
+  // Reference names sit directly above their line, one row each so they never overlap
+  const names = POLS.map(p => `<th scope="col" class="refnames"><div class="bar" style="height:44px">` +
+    REFS.map(([k, n, cls], j) => `<i class="ref ${cls}" style="left:${pct(D.limits[p][k], p)};top:${4 + j * 13 + 11}px;bottom:-3px" aria-hidden="true"></i>` +
+      `<span class="refname" style="left:${pct(D.limits[p][k], p)};top:${j * 13}px">${n}</span>`).join("") + `</div></th>`).join("");
   const body = rows.map(r => {
     const on = S.stations.has(r.code);
     const cells = POLS.map(p => {
@@ -464,8 +491,10 @@ function drawLimits() {
       `${stationLabel(byCode(r.code))}</button></th>${cells}</tr>`;
   }).join("");
   const unit = isAnnual() ? "µg/m³, annual mean 2025" : `µg/m³, mean · ${periodName()} · ${daysName()}`;
-  el("g-limits").innerHTML = `<caption>${unit}, sorted by NO₂. Click a station to select it.</caption>` +
-    `<thead><tr><th scope="col">Station</th>${head}</tr></thead><tbody>${body}</tbody>`;
+  el("g-limits").innerHTML = `<caption>${unit} · sorted by NO₂</caption>` +
+    `<thead><tr><th scope="col" rowspan="2" style="vertical-align:bottom">Station</th>${head}</tr><tr>${names}</tr></thead><tbody>${body}</tbody>`;
+  el("limits-legend").innerHTML = REFS.map(([, n, , dash]) => `<span>${keyLine(dash)}${n}</span>`).join("") +
+    `<span><svg width="14" height="10" aria-hidden="true"><rect width="14" height="10" fill="${OTHER}"/></svg>not selected</span>`;
   el("g-limits").querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
   el("limits-period").textContent = isAnnual() ? "annual mean 2025" : `${periodName()} · ${daysName()}`;
 }
@@ -511,10 +540,10 @@ function renderStation() {
       return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th><td class="mono">${fmt(a)}</td>` +
         REFS.map(([k]) => { const up = a > D.limits[p][k]; return `<td class="${up ? "above" : "below"}">${up ? "above" : "below"} ${D.limits[p][k]}</td>`; }).join("") + "</tr>";
     }).join("");
-    const pm = s.pm25 ? `<p class="small" style="margin:8px 0 0">PM2.5 days above the 24-hour level: <b>WHO ${D.limits["PM2.5"].days_over_who[c]}</b> (3–4 allowed) · <b>EU 2030 ${D.limits["PM2.5"].days_over_eu2030[c]}</b> (18 allowed)</p>` : "";
-    return `<h2>${stationLabel(s)}</h2><div class="small">${c} · ${s.type} station · nearest other station ${s.distance_nearest_km ?? "–"} km · measuring height ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</div>
-      <table class="vals" style="margin-top:8px"><tr><th scope="col"><span class="sr">Pollutant</span></th><th scope="col">Annual mean 2025, µg/m³</th>` +
-      REFS.map(([, n]) => `<th scope="col">${n}</th>`).join("") + `</tr>${rows}</table>${pm}`;
+    return `<h2>${stationLabel(s)}<span class="small" style="font-weight:400">, ${s.type}, ${c}</span></h2>
+      <div class="small">nearest other station ${s.distance_nearest_km ?? "–"} km · measuring height: ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</div>
+      <table class="vals" style="margin-top:8px"><tr><th scope="col">Pollutant</th><th scope="col">Annual mean 2025, µg/m³</th>` +
+      REFS.map(([, n]) => `<th scope="col">${n}</th>`).join("") + `</tr>${rows}</table>`;
   }).join(`<hr style="border:0;border-top:1px solid var(--line);margin:14px 0">`);
 }
 
@@ -546,23 +575,22 @@ function renderControls() {
   const all = D.stations.map(s => s.code);
   [["All", all], ...TYPES.map(([t, n]) => [n, D.stations.filter(s => s.type === t).map(s => s.code)]), ["None", []]].forEach(([n, codes]) => {
     const same = codes.length === S.stations.size && codes.every(c => S.stations.has(c));
-    gr.appendChild(pressButton(n, same, () => { S.stations = new Set(codes); render(); }));
+    const b = pressButton(n, same, () => { S.stations = new Set(codes); render(); });
+    if (n === "All" || n === "None") b.classList.add("quiet");
+    gr.appendChild(b);
   });
-  const sel = selected(), possible = possibleHours();
-  const cov = POLS.map(p => {
-    const codes = sel.filter(c => measures(c, p));
-    if (!codes.length) return null;
-    const valid = codes.reduce((a, c) => a + meanOver(c, p, monthsOf()).n, 0);
-    return `${SHORT[p]} ${(valid / (possible * codes.length) * 100).toFixed(1)} %`;
-  }).filter(Boolean);
+  const traffic = D.stations.filter(x => x.type === "traffic").map(x => x.code);
+  const isTraffic = traffic.length === S.stations.size && traffic.every(c => S.stations.has(c));
+  el("group-note").hidden = !isTraffic;
+  el("group-note").textContent = "Traffic stations stand at busy roads on purpose; the network labels them as traffic stations in its data.";
+  const sel = selected();
   const who = sel.length === 0 ? "no station" : sel.length === 1 ? stationLabel(byCode(sel[0])) : `${sel.length} stations`;
-  el("status").innerHTML = `Showing <b>${periodName()}</b> · <b>${daysName()}</b> · <b>${who}</b>` +
-    (cov.length ? `<br>Hours with a valid value: ${cov.join(" · ")} (of ${possible.toLocaleString("en")} per station)` : "");
+  el("status").innerHTML = `Showing <b>${periodName()}</b> · <b>${daysName()}</b> · <b>${who}</b>`;
 }
 
 // ---------- map: outline, stations, every name in a column with a leader line ----------
 function renderMap() {
-  const svg = el("map"), W = 600, H = 400, COL = 168, LH = 24, GAP = 3;
+  const svg = el("map"), W = 600, H = 400, COL = 186, LH = 24, GAP = 3;
   svg.innerHTML = "";
   const pts = D.stations.filter(s => s.lat != null && s.lng != null);
   const ring = (D.boundary || []).flat();
@@ -591,6 +619,20 @@ function renderMap() {
     const overflow = prev + LH - (H - 4);
     if (overflow > 0) for (let j = list.length - 1, lim = H - 4 - LH; j >= 0; j--) { list[j].ly = Math.min(list[j].ly, lim); lim = list[j].ly - LH - GAP; }
     if (list.length && list[0].ly < 4) { const d = 4 - list[0].ly; list.forEach(i => { i.ly += d; }); }
+    // Untangle: swap the label slots of two stations whenever their lines cross.
+    // Each swap shortens the total line length, so this always ends with no crossings.
+    const bendX = side === "left" ? COL + 14 : W - COL - 14;
+    const cross = (a, b) => {
+      const o = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]));
+      const p1 = [bendX, a.ly + LH / 2], p2 = [a.x, a.y], p3 = [bendX, b.ly + LH / 2], p4 = [b.x, b.y];
+      return o(p1, p2, p3) * o(p1, p2, p4) < 0 && o(p3, p4, p1) * o(p3, p4, p2) < 0;
+    };
+    for (let pass = 0, swapped = true; swapped && pass < 200; pass++) {
+      swapped = false;
+      for (let a = 0; a < list.length; a++) for (let b = a + 1; b < list.length; b++) {
+        if (cross(list[a], list[b])) { [list[a].ly, list[b].ly] = [list[b].ly, list[a].ly]; swapped = true; }
+      }
+    }
     list.forEach(i => {
       const cy = i.ly + LH / 2;
       const g = svgEl("g", {class: "label-btn", role: "button", tabindex: 0, "aria-pressed": i.on ? "true" : "false",
@@ -623,13 +665,14 @@ function renderMap() {
 // ---------- notes at the bottom ----------
 function renderNotes() {
   const sel = selected(), items = [];
-  if (S.view === "hour") items.push("No limit line in the hour view: the limits are annual means, not hourly values.");
-  if (!isAnnual()) items.push("Means for part of the year are compared with annual limits only as a yardstick.");
-  const missing = sel.filter(c => !measures(c, "PM2.5")).map(c => stationLabel(byCode(c)));
-  if (missing.length) items.push(`PM2.5 is not measured at ${missing.join(", ")}.` +
-    (missing.length < sel.length ? ` The PM2.5 values use the other ${sel.length - missing.length} station${sel.length - missing.length === 1 ? "" : "s"}.` : " Only NO₂ is shown."));
-  items.push("March 2025 had exceptional high-pressure weather (DWD). The NO₂ peak in March may not recur.");
-  items.push("One year of data: no trends. Patterns fit traffic but do not prove causes.");
+  const missing = sel.filter(c => !measures(c, "PM2.5")).map(c => street(byCode(c)));
+  if (missing.length) items.push(`<b>No PM2.5</b> at ${missing.join(", ")}.`);
+  items.push(S.view === "hour"
+    ? "<b>No limit line by hour.</b> The limits are annual means."
+    : "<b>Monthly means</b> are not compared with the annual limits.");
+  if (!isAnnual()) items.push("<b>Part of the year:</b> the limits chart is a yardstick only.");
+  if (S.view === "month" || S.month === 3) items.push("<b>March 2025:</b> exceptional high-pressure weather (DWD).");
+  items.push("<b>One year only:</b> no trends, no causes.");
   el("care-list").innerHTML = items.map(t => `<li>${t}</li>`).join("");
 }
 
@@ -638,7 +681,7 @@ function fitWhen() {
   const panel = el("quick").parentElement, svg = el("g-when");
   const spare = panel.clientHeight - el("quick").offsetHeight - 18;
   if (spare > 8 && svg.clientWidth) {
-    EXTRA = Math.min(260, Math.round(spare * 600 / svg.clientWidth));
+    EXTRA = Math.min(700, EXTRA + Math.round(spare * 600 / svg.clientWidth));
     drawWhen();
   }
 }
@@ -655,14 +698,14 @@ function render() {
   requestAnimationFrame(fitWhen);
 }
 
-// Data comes from berlin_2025.json next to this file, or is built in by the Streamlit app (window.BERLIN_DATA)
+// Data comes from berlin_2025.json next to this file, or from window.BERLIN_DATA if a host page builds it in
 (window.BERLIN_DATA ? Promise.resolve(window.BERLIN_DATA)
   : fetch("berlin_2025.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }))
   .then(data => {
     D = data;
     let t;
     window.addEventListener("resize", () => { clearTimeout(t); t = setTimeout(render, 150); });
-    if (!byCode("mc174")) S.stations = new Set(D.stations.length ? [D.stations[0].code] : []);
+    S.stations = new Set(D.stations.map(s => s.code));
     render();
   })
   .catch(() => {
