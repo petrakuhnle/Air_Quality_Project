@@ -42,9 +42,17 @@ a { color: var(--select); }
 [hidden] { display: none !important; }
 
 header, .grid, footer { max-width: 1680px; margin: 0 auto; }
-header { padding: 24px var(--edge) 14px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+header { padding: 24px var(--edge) 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 h1 { margin: 0; font-size: 30px; line-height: 38px; }
 h1 span { color: var(--secondary); font-weight: 400; }
+/* Data facts next to the title: dark blue (the interface colour) on its light tint */
+.meta { display: flex; flex-wrap: wrap; margin: 0; padding: 5px 4px; list-style: none; background: var(--select-tint);
+        border-radius: 999px; font-size: 14px; line-height: 20px; color: var(--select); }
+.meta li { padding: 2px 14px; }
+.meta li + li { border-left: 1px solid #C3CBD6; }
+.meta b { font-weight: 700; }
+.meta a { color: var(--select); font-weight: 700; text-decoration: underline; text-decoration-color: #9AA6B6; text-underline-offset: 3px; }
+.meta a:hover { text-decoration-color: var(--select); }
 h2 { margin: 0; font-size: 18px; line-height: 26px; }
 .eyebrow { font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--secondary); margin: 0 0 2px; }
 .frame .eyebrow { color: var(--on-frame); }
@@ -173,7 +181,11 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
 <a class="skip" href="#s-when">Skip to charts</a>
 <header>
   <h1>Berliner Luft <span>· Data 2025</span></h1>
-  <div class="small">Hourly measurements · 15 stations · Berliner Luftgütemessnetz</div>
+  <ul class="meta" aria-label="About the data">
+    <li><b>Hourly</b> measurements</li>
+    <li><b>15</b> stations</li>
+    <li><a href="https://luftdaten.berlin.de/">Berliner Luftgütemessnetz</a></li>
+  </ul>
 </header>
 <div id="error" class="error" role="alert" hidden></div>
 
