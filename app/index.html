@@ -157,7 +157,7 @@ tr.on .bar .na { background: var(--select-tint); }
 /* Notes at the bottom: quiet, typed by a coloured tag only */
 #s-notes h2 { margin-bottom: 14px; }
 #s-notes .lead { margin: 2px 0 14px; font-size: 14px; color: var(--secondary); }
-.notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+.notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
 .note-col h3 { display: flex; align-items: center; gap: 8px; font-size: 15px; line-height: 22px; margin: 0 0 8px; color: var(--ink); }
 .note-col .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex: none; }
 .notes ul { margin: 0; padding-left: 0; list-style: none; font-size: 14px; line-height: 20px; color: var(--secondary); }
@@ -174,7 +174,6 @@ table.levels .pm25 { color: var(--pm25); font-weight: 700; }
 footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
 .error { max-width: 1680px; margin: 0 auto; padding: 24px var(--edge); font-size: 18px; }
 
-@media (max-width: 1400px) and (min-width: 1101px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* Smaller laptops and tablets: one column in reading order */
 @media (max-width: 1100px) {
   .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pol" "map" "station" "sel" "when" "limits" "notes"; }
@@ -264,10 +263,6 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
   <section class="card" id="s-notes" aria-labelledby="h-notes">
     <h2 id="h-notes">About the data</h2>
     <div class="notes">
-      <div class="note-col care">
-        <h3><span class="dot" aria-hidden="true"></span>Keep in mind</h3>
-        <ul id="care-list"></ul>
-      </div>
       <div class="note-col">
         <h3><span class="dot" aria-hidden="true"></span>Limits</h3>
         <table class="levels">
@@ -276,7 +271,7 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
           <tr><th scope="row" class="no2">NO₂</th><td>10</td><td>20</td><td>40</td></tr>
           <tr><th scope="row" class="pm25">PM2.5</th><td>5</td><td>10</td><td>25</td></tr>
         </table>
-        <p class="fine">EU 2030 applies from 2030; compliance is assessed from 2026. WHO levels are guidelines, not law.</p>
+        <p class="fine">The limits are annual means; hourly and monthly values are not compared with them. EU 2030 applies from 2030. WHO levels are guidelines, not law.</p>
       </div>
       <div class="note-col">
         <h3><span class="dot" aria-hidden="true"></span>Pollutants</h3>
@@ -507,7 +502,7 @@ function drawLimits() {
     `<colgroup><col style="width:32%"><col style="width:38%"><col style="width:30%"></colgroup>` +
     `<thead><tr><th scope="col">Station</th>${head}</tr></thead><tbody>${body}</tbody>`;
   el("limits-legend").innerHTML = REFS.map(([k, n, , dash]) =>
-    `<span>${keyLine(dash)}${n} (NO₂ ${D.limits["NO2"][k]} · PM2.5 ${D.limits["PM2.5"][k]})</span>`).join("");
+    `<span>${keyLine(dash)}<b>${n}</b> (NO₂ ${D.limits["NO2"][k]} · PM2.5 ${D.limits["PM2.5"][k]})</span>`).join("");
   el("g-limits").querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
   el("limits-period").textContent = isAnnual() ? "· annual mean 2025" : `· ${periodName()} · ${daysName()}`;
 }
@@ -688,14 +683,6 @@ function renderMap() {
 
 // ---------- notes at the bottom ----------
 function renderNotes() {
-  const items = [];
-  items.push(S.view === "hour"
-    ? "<b>No limit line by hour.</b> The limits are annual means."
-    : "<b>Monthly means</b> are not compared with the annual limits.");
-  if (!isAnnual()) items.push("<b>Part of the year:</b> the limits chart is a yardstick only.");
-  if (S.view === "month" || S.month === 3) items.push("<b>March 2025:</b> exceptional high-pressure weather (DWD).");
-  items.push("<b>One year only:</b> no trends, no causes.");
-  el("care-list").innerHTML = items.map(t => `<li>${t}</li>`).join("");
   el("no-pm25").textContent = D.stations.filter(x => !x.pm25).map(street).join(", ");
 }
 
