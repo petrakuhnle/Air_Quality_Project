@@ -47,7 +47,7 @@ a { color: var(--select); }
 [hidden] { display: none !important; }
 
 header, .grid, footer { max-width: 1680px; margin: 0 auto; }
-header { padding: 24px var(--edge) 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+header { padding: 16px var(--edge) 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 h1 { margin: 0; font-size: 30px; line-height: 38px; }
 h1 span { color: var(--secondary); font-weight: 400; }
 /* Data facts next to the title: dark blue (the interface colour) on its light tint */
@@ -67,15 +67,15 @@ h2 { margin: 0; font-size: 18px; line-height: 26px; }
 .head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 
 /* Layout: top row choose, middle row read, bottom row notes. Charts share one bottom line. */
-.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px; padding: 0 var(--edge) 32px;
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px; padding: 0 var(--edge) 24px;
         grid-template-areas: "left right" "notes notes"; }
-.area-left, .area-right { display: flex; flex-direction: column; gap: 20px; }
+.area-left, .area-right { display: flex; flex-direction: column; gap: 14px; }
 .area-left { grid-area: left; }
 .area-right { grid-area: right; }
 #s-when, #s-limits { flex: 1 1 auto; }   /* both charts end on the same bottom line */
 #s-notes { grid-area: notes; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
-.frame { background: var(--frame); color: var(--on-frame); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+.frame { background: var(--frame); color: var(--on-frame); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; }
 .frame h2 { color: #fff; }
 .frame h2 .period { font-weight: 400; color: var(--on-frame); }
 .frame .head button { background: transparent; color: var(--on-frame); border-color: #6B7A8C; }
@@ -97,7 +97,8 @@ h2 { margin: 0; font-size: 18px; line-height: 26px; }
 .pol b { display: block; }
 
 /* Selection */
-fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+fieldset { border: 0; padding: 0; margin: 0; }
+fieldset + fieldset { margin-top: 8px; }
 legend { font-size: 14px; font-weight: 700; padding: 0; margin-bottom: 6px; }
 .months { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 6px; }
 .months button { padding: 0; min-height: 34px; font-size: 14px; }
@@ -121,30 +122,33 @@ table.vals th { font-weight: 400; font-size: 13px; color: var(--secondary); }
 .linkbtn[aria-pressed="true"] { background: none; color: var(--ink); font-weight: 700; border: 0; }
 
 /* Limits table with bars */
-table.limits { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 18px; }
+table.limits { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 16px; }
 table.limits caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 6px; }
-table.limits th, table.limits td { padding: 3px 4px; text-align: left; vertical-align: middle; }
+table.limits th, table.limits td { padding: 2px 4px; text-align: left; vertical-align: middle; }
 table.limits thead th { vertical-align: bottom; border-bottom: 1px solid var(--line); font-size: 13px; }
 table.limits .key { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 400; font-size: 12px; color: var(--secondary); margin-top: 2px; }
 table.limits .key span { display: inline-flex; align-items: center; gap: 4px; }
 table.limits tbody th { font-weight: 400; color: var(--secondary); }
 table.limits tr.on th { font-weight: 700; color: var(--ink); }
 table.limits tr.on { background: var(--select-tint); }
-.bar { position: relative; height: 20px; }
-.bar .fill { position: absolute; left: 0; top: 4px; height: 12px; background: var(--other); }
-.bar .ref { position: absolute; top: -3px; bottom: -3px; border-left: 1.5px solid var(--ref); }
-.bar .ref.eu2030 { border-left-style: dashed; }
-.bar .ref.who { border-left: 2px dotted var(--ref); }
+table.limits td { position: relative; padding: 1px 6px; }
+table.limits td.no2 .val, table.limits td.no2 .na { background: var(--no2-tint); }
+table.limits td.pm25 .val, table.limits td.pm25 .na { background: var(--pm25-tint); }
+table.limits tr.on td .val, table.limits tr.on td .na { background: var(--select-tint); }
+table.limits .ref { position: absolute; top: 0; bottom: 0; border-left: 1.5px solid var(--ref); }
+table.limits .ref.eu2030 { border-left-style: dashed; }
+table.limits .ref.who { border-left: 2px dotted var(--ref); }
+.bar { position: relative; height: 16px; }
+.bar .fill { position: absolute; left: 0; top: 3px; height: 10px; background: var(--other); z-index: 1; }
 .bar .val { position: absolute; top: 1px; font-family: "Atkinson Hyperlegible Mono", "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 18px;
             color: var(--ink); background: var(--surface); padding: 0 3px; border-radius: 3px; z-index: 1; }
-tr.on .bar .val { background: var(--select-tint); }
 .refname { position: absolute; transform: translateX(-50%); font-size: 11px; line-height: 13px; font-weight: 400;
            color: var(--ink); background: var(--surface); padding: 0 2px; white-space: nowrap; }
 .bar .na { position: relative; z-index: 1; font-size: 12px; color: var(--secondary); background: var(--surface); padding: 0 3px; }
-tr.on .bar .na { background: var(--select-tint); }
 
 /* Map */
-.mapbox { display: flex; align-items: center; }
+.mapbox { display: flex; align-items: center; justify-content: center; }
+#map { max-width: 640px; }
 .label-btn { cursor: pointer; }
 .label-btn .lbg { fill: var(--surface); stroke: var(--line); }
 .label-btn:hover .lbg { stroke: var(--select); }
@@ -174,6 +178,17 @@ table.levels .pm25 { color: var(--pm25); font-weight: 700; }
 footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
 .error { max-width: 1680px; margin: 0 auto; padding: 24px var(--edge); font-size: 18px; }
 
+/* Laptop screens: keep everything down to the charts on one screen */
+@media (max-height: 940px) and (min-width: 1101px) {
+  .card, .frame { padding: 10px 14px; }
+  .panel { margin-top: 6px; }
+  .bar { height: 14px; }
+  .bar .fill { top: 2px; }
+  table.limits { font-size: 12px; line-height: 14px; }
+  table.limits tbody th { white-space: nowrap; }
+  .pol { padding: 8px 12px; }
+  header { padding-top: 10px; padding-bottom: 6px; }
+}
 /* Smaller laptops and tablets: one column in reading order */
 @media (max-width: 1100px) {
   .grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pol" "map" "station" "sel" "when" "limits" "notes"; }
@@ -213,14 +228,14 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
     </section>
 
     <section class="card" id="s-select" aria-labelledby="h-sel">
-      <h2 id="h-sel" style="margin-bottom:10px">Period and days</h2>
+      <h2 id="h-sel" class="sr">Period and days</h2>
       <fieldset>
-        <legend>Period</legend>
+        <legend class="sr">Period</legend>
         <div class="row"><span id="full-year"></span></div>
         <div id="months" class="months"></div>
       </fieldset>
       <fieldset>
-        <legend>Days</legend>
+        <legend class="sr">Days</legend>
         <div class="row" id="daytypes"></div>
       </fieldset>
       <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -247,7 +262,7 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
         <div class="row" id="groups" role="group" aria-label="Select a group of stations"></div>
       </div>
       <div class="mapbox">
-        <svg id="map" viewBox="0 0 600 400" class="chart" role="group" aria-label="Map of Berlin. Each station name is a button."></svg>
+        <svg id="map" viewBox="0 0 600 260" class="chart" role="group" aria-label="Map of Berlin. Each station name is a button."></svg>
       </div>
     </section>
 
@@ -419,7 +434,7 @@ function seriesFor(fn) {
 
 // ---------- one chart, two views: hour of day or month ----------
 function drawWhen() {
-  const svg = el("g-when"), W = 600, H = 300 + EXTRA, box = {l: 48, r: W - 60, t: 14, b: H - 42};
+  const svg = el("g-when"), W = 600, H = 250 + EXTRA, box = {l: 48, r: W - 60, t: 14, b: H - 42};
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.innerHTML = "";
   const sel = selected();
@@ -463,9 +478,8 @@ function drawWhen() {
       r.onclick = () => selectMonth(i + 1);
     });
   }
-  const pmMissing = sel.filter(c => !measures(c, "PM2.5")).length;
-  const who = sel.length === 1 ? stationLabel(byCode(sel[0])) : `mean of ${sel.length} stations` + (pmMissing && pmMissing < sel.length ? ` (PM2.5: ${sel.length - pmMissing})` : "");
-  el("when-legend").innerHTML = series.map(s => legendLine(SHORT[s.pol], COLOUR[s.pol])).join("") + `<span class="small">${who}</span>`;
+  const who = sel.length === 1 ? stationLabel(byCode(sel[0])) : `mean of ${sel.length} stations`;
+  el("when-legend").innerHTML = series.map(s => legendLine(SHORT[s.pol], COLOUR[s.pol])).join("");
   el("g-when-desc").textContent = series.map(s => {
     const v = s.mean.filter(q => q != null), hi = s.mean.indexOf(Math.max(...v)), lo = s.mean.indexOf(Math.min(...v));
     const at = i => S.view === "hour" ? `${pad2(i)}:00` : MONTH[i];
@@ -482,16 +496,20 @@ function drawLimits() {
   const rows = D.stations.map(s => ({code: s.code, v: Object.fromEntries(POLS.map(p => [p, measures(s.code, p) ? meanOver(s.code, p, months).mean : null]))}))
     .sort((a, b) => (b.v.NO2 ?? -1) - (a.v.NO2 ?? -1));
   const scale = Object.fromEntries(POLS.map(p => [p, Math.max(...rows.map(r => r.v[p] ?? 0), ...REFS.map(([k]) => D.limits[p][k])) * 1.06]));
-  const pct = (v, p) => (v / scale[p] * 100).toFixed(1) + "%";
+  const frac = (v, p) => v / scale[p];
+  const pct = (v, p) => (frac(v, p) * 100).toFixed(1) + "%";
+  // Lines sit on the cell, measured inside its 6 px padding, so they run unbroken from row to row
+  const lineAt = (v, p) => `calc(6px + (100% - 12px) * ${frac(v, p).toFixed(4)})`;
+  const cls = {"NO2": "no2", "PM2.5": "pm25"};
   const head = POLS.map(p => `<th scope="col"><span style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</span></th>`).join("");
   const body = rows.map(r => {
     const on = S.stations.has(r.code);
     const cells = POLS.map(p => {
       const v = r.v[p];
-      const refs = REFS.map(([k, , cls]) => `<i class="ref ${cls}" style="left:${pct(D.limits[p][k], p)}" aria-hidden="true"></i>`).join("");
-      if (v == null) return `<td><div class="bar">${refs}<span class="na">not measured</span></div></td>`;
+      const refs = REFS.map(([k, , c]) => `<i class="ref ${c}" style="left:${lineAt(D.limits[p][k], p)}" aria-hidden="true"></i>`).join("");
+      if (v == null) return `<td class="${cls[p]}">${refs}<div class="bar"><span class="na">not measured</span></div></td>`;
       const above = REFS.filter(([k]) => v > D.limits[p][k]).map(([k, n]) => `${n} ${D.limits[p][k]}`);
-      return `<td><div class="bar">${refs}<span class="fill" style="width:${pct(v, p)};${on ? `background:${COLOUR[p]}` : ""}"></span>` +
+      return `<td class="${cls[p]}">${refs}<div class="bar"><span class="fill" style="width:${pct(v, p)};${on ? `background:${COLOUR[p]}` : ""}"></span>` +
         `<span class="val" style="left:calc(${pct(v, p)} + 3px)">${fmt(v)}</span>` +
         `<span class="sr">µg/m³, ${above.length ? "above " + above.join(", ") : "below all three limits"}</span></div></td>`;
     }).join("");
@@ -499,7 +517,7 @@ function drawLimits() {
       `${stationLabel(byCode(r.code))}</button></th>${cells}</tr>`;
   }).join("");
   el("g-limits").innerHTML = `<caption>µg/m³ · sorted by NO₂</caption>` +
-    `<colgroup><col style="width:32%"><col style="width:38%"><col style="width:30%"></colgroup>` +
+    `<colgroup><col style="width:32%"><col style="width:38%;background:var(--no2-tint)"><col style="width:30%;background:var(--pm25-tint)"></colgroup>` +
     `<thead><tr><th scope="col">Station</th>${head}</tr></thead><tbody>${body}</tbody>`;
   el("limits-legend").innerHTML = REFS.map(([k, n, , dash]) =>
     `<span>${keyLine(dash)}<b>${n}</b> (NO₂ ${D.limits["NO2"][k]} · PM2.5 ${D.limits["PM2.5"][k]})</span>`).join("");
@@ -609,7 +627,7 @@ function renderControls() {
 
 // ---------- map: outline, stations, every name in a column with a leader line ----------
 function renderMap() {
-  const svg = el("map"), W = 600, H = 400, COL = 186, LH = 24, GAP = 3;
+  const svg = el("map"), W = 600, H = 260, COL = 176, LH = 21, GAP = 2;
   svg.innerHTML = "";
   const pts = D.stations.filter(s => s.lat != null && s.lng != null);
   const ring = (D.boundary || []).flat();
@@ -691,7 +709,7 @@ function fitWhen() {
   const panel = el("quick").parentElement, svg = el("g-when");
   const spare = panel.clientHeight - el("quick").offsetHeight - 18;
   if (spare > 8 && svg.clientWidth) {
-    EXTRA = Math.min(700, EXTRA + Math.round(spare * 600 / svg.clientWidth));
+    EXTRA = Math.min(120, EXTRA + Math.round(spare * 600 / svg.clientWidth));
     drawWhen();
   }
 }
