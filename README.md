@@ -32,7 +32,8 @@ WHO, EU 2030 and EU limits in force in 2025.
 
 **Q1 · Hours and stations** ([02](notebooks/02_peak_hours.ipynb))
 
-- NO₂ swings about 45 % from the 03:00 low to the 07:00 peak. PM2.5 stays within about 10 % all day
+- NO₂ has two daily peaks, around 07:00 and 21:00, about 45 % above its two lows
+  around 03:00 and 13:00. PM2.5 varies by about 10 to 15 % over the day
 - Top 10 % of station-hours: NO₂ at 5 of 15 stations, all traffic. PM2.5 at 4 of 12, in a narrow range
 - Between stations, NO₂ spans 7.6 to 26.3 µg/m³ (factor 3.5), PM2.5 8.2 to 13.6 (factor 1.7)
 - Weekend NO₂ is 14 to 25 % lower at every station, not only at traffic sites. Weekend PM2.5 moves under 4 %
