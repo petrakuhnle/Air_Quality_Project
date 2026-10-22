@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Berliner Luft · Data 2025</title>
+<!-- Fonts from Google Fonts, so every visitor sees the same font and a broken local copy is never used -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;500&display=swap">
 <style>
 :root {
   /* Colour has one meaning each.
@@ -14,7 +19,7 @@
   --frame: #2E3B4E;       /* dark grey blue around charts */
   --on-frame: #DCE3EA;    /* text on the frame, 8.8:1 */
   --ink: #15212C;         /* text */
-  --secondary: #505357;   /* secondary text, neutral grey, 7.9:1 on white */
+  --secondary: #44536A;   /* secondary text, slate blue from the interface colour, 7.8:1 on white */
   --line: #D9DEE3;        /* borders, gridlines */
   --select: #2E3B4E;      /* interface: selection, actions, focus, 11.7:1 on white */
   --select-tint: #E6EAF0; /* selected rows and labels */
@@ -29,7 +34,7 @@
   --edge: clamp(16px, 3.5vw, 48px);
 }
 * { box-sizing: border-box; }
-body { margin: 0; font: 16px/24px "Atkinson Hyperlegible", system-ui, sans-serif; color: var(--ink); background: var(--canvas); }
+body { margin: 0; font: 16px/24px "Atkinson Hyperlegible", system-ui, sans-serif; word-spacing: normal; color: var(--ink); background: var(--canvas); }
 button { font: inherit; color: var(--ink); min-height: 36px; padding: 0 12px; border: 1.5px solid var(--other);
          border-radius: 10px; background: var(--surface); cursor: pointer; }
 button:hover { border-color: var(--select); }
@@ -57,7 +62,7 @@ h2 { margin: 0; font-size: 18px; line-height: 26px; }
 .eyebrow { font-size: 12px; line-height: 16px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: var(--secondary); margin: 0 0 2px; }
 .frame .eyebrow { color: var(--on-frame); }
 .small { font-size: 14px; line-height: 20px; color: var(--secondary); }
-.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 14px; }
+.mono { font-family: "Atkinson Hyperlegible Mono", "IBM Plex Mono", ui-monospace, monospace; font-size: 14px; }
 .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 
@@ -72,6 +77,7 @@ h2 { margin: 0; font-size: 18px; line-height: 26px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
 .frame { background: var(--frame); color: var(--on-frame); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; }
 .frame h2 { color: #fff; }
+.frame h2 .period { font-weight: 400; color: var(--on-frame); }
 .frame .head button { background: transparent; color: var(--on-frame); border-color: #6B7A8C; }
 .frame .head button:hover { border-color: #FFFFFF; }
 .frame .head button[aria-pressed="true"] { background: #FFFFFF; color: var(--ink); border-color: #FFFFFF; }
@@ -104,6 +110,10 @@ table.vals td, table.vals th { text-align: left; padding: 5px 8px 5px 0; border-
 table.vals th { font-weight: 400; font-size: 13px; color: var(--secondary); }
 .above { font-weight: 700; color: var(--ink); }
 .below { color: var(--secondary); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; padding: 0; list-style: none; }
+.tags li { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+           background: var(--select-tint); color: var(--select); font-size: 14px; line-height: 20px; }
+.tags li.mono { font-size: 13px; }
 .namelist { columns: 2; column-gap: 20px; margin: 8px 0 0; padding: 0; list-style: none; }
 .linkbtn { border: 0; background: none; padding: 0; min-height: 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
            text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
@@ -117,7 +127,7 @@ table.limits th, table.limits td { padding: 3px 4px; text-align: left; vertical-
 table.limits thead th { vertical-align: bottom; border-bottom: 1px solid var(--line); font-size: 13px; }
 table.limits .key { display: flex; gap: 10px; flex-wrap: wrap; font-weight: 400; font-size: 12px; color: var(--secondary); margin-top: 2px; }
 table.limits .key span { display: inline-flex; align-items: center; gap: 4px; }
-table.limits tbody th { font-weight: 400; color: var(--secondary); width: 40%; }
+table.limits tbody th { font-weight: 400; color: var(--secondary); }
 table.limits tr.on th { font-weight: 700; color: var(--ink); }
 table.limits tr.on { background: var(--select-tint); }
 .bar { position: relative; height: 20px; }
@@ -125,7 +135,7 @@ table.limits tr.on { background: var(--select-tint); }
 .bar .ref { position: absolute; top: -3px; bottom: -3px; border-left: 1.5px solid var(--ref); }
 .bar .ref.eu2030 { border-left-style: dashed; }
 .bar .ref.who { border-left: 2px dotted var(--ref); }
-.bar .val { position: absolute; top: 1px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 18px;
+.bar .val { position: absolute; top: 1px; font-family: "Atkinson Hyperlegible Mono", "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; line-height: 18px;
             color: var(--ink); background: var(--surface); padding: 0 3px; border-radius: 3px; z-index: 1; }
 tr.on .bar .val { background: var(--select-tint); }
 .refname { position: absolute; transform: translateX(-50%); font-size: 11px; line-height: 13px; font-weight: 400;
@@ -140,17 +150,16 @@ tr.on .bar .na { background: var(--select-tint); }
 .label-btn:hover .lbg { stroke: var(--select); }
 .label-btn:focus { outline: none; }
 .label-btn:focus-visible .lbg { stroke: var(--select); stroke-width: 3; }
-#group-note { margin: 8px 0 0; }
 /* All and None are secondary to the station types */
-#groups .quiet { color: var(--secondary); border-color: var(--line); }
-#groups .quiet[aria-pressed="true"] { color: #fff; border-color: var(--select); }
+#groups .quiet { color: var(--secondary); background: var(--select-tint); border-color: var(--select-tint); }
+#groups .quiet[aria-pressed="true"] { color: var(--ink); background: #C9D2DE; border-color: var(--select); }
 
 /* Notes at the bottom: quiet, typed by a coloured tag only */
+#s-notes h2 { margin-bottom: 14px; }
 #s-notes .lead { margin: 2px 0 14px; font-size: 14px; color: var(--secondary); }
 .notes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
 .note-col h3 { display: flex; align-items: center; gap: 8px; font-size: 15px; line-height: 22px; margin: 0 0 8px; color: var(--ink); }
-.note-col .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--select); flex: none; }
-.note-col.care .dot { background: var(--care); }
+.note-col .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex: none; }
 .notes ul { margin: 0; padding-left: 0; list-style: none; font-size: 14px; line-height: 20px; color: var(--secondary); }
 .notes li { margin-bottom: 8px; }
 .notes b { color: var(--ink); }
@@ -159,7 +168,7 @@ table.levels { border-collapse: collapse; font-size: 14px; width: 100%; }
 table.levels caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 4px; }
 table.levels th, table.levels td { padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); text-align: left; }
 table.levels thead th, table.levels tr:first-child th { font-weight: 400; font-size: 13px; color: var(--secondary); }
-table.levels td { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink); }
+table.levels td { font-family: "Atkinson Hyperlegible Mono", "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink); }
 table.levels .no2 { color: var(--no2); font-weight: 700; }
 table.levels .pm25 { color: var(--pm25); font-weight: 700; }
 footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
@@ -184,7 +193,6 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
   <ul class="meta" aria-label="About the data">
     <li><b>Hourly</b> measurements</li>
     <li><b>15</b> stations</li>
-    <li><a href="https://luftdaten.berlin.de/">Berliner Luftgütemessnetz</a></li>
   </ul>
 </header>
 <div id="error" class="error" role="alert" hidden></div>
@@ -192,17 +200,15 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
 <main class="grid" id="main">
   <div class="area-left">
     <section class="card" id="s-pollutants" aria-labelledby="h-pol">
-      <div class="head" style="margin-bottom:8px">
-        <div><p class="eyebrow">What is measured</p><h2 id="h-pol" class="sr">Pollutants</h2></div>
-      </div>
+      <h2 id="h-pol" class="sr">Pollutants</h2>
       <div class="pollutants">
         <div class="pol no2">
           <b>Nitrogen dioxide (NO₂)</b>
-          <span class="small">Mainly traffic exhaust · affects the airways · measured at all 15 stations</span>
+          <span class="small">Mainly traffic exhaust · affects the airways</span>
         </div>
         <div class="pol pm25">
           <b>Fine particles (PM2.5)</b>
-          <span class="small">Particles under 2.5 µm · affects heart and blood vessels · measured at 12 of 15 stations</span>
+          <span class="small">Particles under 2.5 µm · affects heart and blood vessels</span>
         </div>
       </div>
     </section>
@@ -223,7 +229,7 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
 
     <section class="frame" id="s-when" aria-labelledby="h-when">
       <div class="head" style="margin-bottom:0">
-        <div><p class="eyebrow">When</p><h2 id="h-when">By hour of day</h2></div>
+        <div><h2 id="h-when">By hour of day</h2></div>
         <div class="row" id="views" role="group" aria-label="Chart view"></div>
       </div>
       <div class="panel"><svg id="g-when" class="chart" role="img" aria-labelledby="g-when-desc"></svg>
@@ -244,29 +250,26 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
       <div class="mapbox">
         <svg id="map" viewBox="0 0 600 400" class="chart" role="group" aria-label="Map of Berlin. Each station name is a button."></svg>
       </div>
-      <p class="small" id="group-note" hidden></p>
     </section>
 
     <section class="card" id="s-station" aria-live="polite"></section>
 
     <section class="frame" id="s-limits" aria-labelledby="h-limits">
-      <p class="eyebrow">Against the limits</p>
-      <h2 id="h-limits">All stations, <span id="limits-period"></span></h2>
+      <h2 id="h-limits">Against the limits <span id="limits-period" class="period"></span></h2>
       <div class="panel grow" style="padding:10px 12px"><table class="limits" id="g-limits"></table></div>
       <div class="legend" id="limits-legend"></div>
     </section>
   </div>
 
   <section class="card" id="s-notes" aria-labelledby="h-notes">
-    <h2 id="h-notes">Good to know</h2>
-    <p class="lead">What to keep in mind when reading the charts above.</p>
+    <h2 id="h-notes">About the data</h2>
     <div class="notes">
       <div class="note-col care">
-        <h3><span class="dot" aria-hidden="true"></span>Before you compare</h3>
+        <h3><span class="dot" aria-hidden="true"></span>Keep in mind</h3>
         <ul id="care-list"></ul>
       </div>
       <div class="note-col">
-        <h3><span class="dot" aria-hidden="true"></span>The limits</h3>
+        <h3><span class="dot" aria-hidden="true"></span>Limits</h3>
         <table class="levels">
           <caption>Annual means, µg/m³</caption>
           <tr><th scope="col"></th><th scope="col">WHO</th><th scope="col">EU 2030</th><th scope="col">EU now</th></tr>
@@ -276,16 +279,18 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
         <p class="fine">EU 2030 applies from 2030; compliance is assessed from 2026. WHO levels are guidelines, not law.</p>
       </div>
       <div class="note-col">
-        <h3><span class="dot" aria-hidden="true"></span>Why NO₂ and PM2.5</h3>
+        <h3><span class="dot" aria-hidden="true"></span>Pollutants</h3>
         <ul>
           <li><b>Largest health burden.</b> Both have EU limits and WHO levels.</li>
+          <li><b>Measured at:</b> NO₂ all 15 stations, PM2.5 12 of 15. No PM2.5 at <span id="no-pm25"></span>.</li>
           <li><b>No ozone.</b> It forms in sunlight and is lowest at busy roads, the opposite pattern.</li>
           <li><b>Not included.</b> PM10, which overlaps with PM2.5.</li>
         </ul>
       </div>
       <div class="note-col">
-        <h3><span class="dot" aria-hidden="true"></span>How it is calculated</h3>
+        <h3><span class="dot" aria-hidden="true"></span>Method</h3>
         <ul>
+          <li><b>Station types,</b> as labelled by the network: traffic at busy roads, placed there on purpose; background inside the city, away from roads; suburb in the outer districts.</li>
           <li><b>Means</b> per hour or month, for the stations, period and days you select.</li>
           <li><b>Limits chart:</b> each station's mean for the period. 2025 with all days is the annual mean.</li>
           <li><b>Gaps:</b> days with fewer than 18 valid hours removed, not filled.</li>
@@ -307,7 +312,7 @@ const POLS = ["NO2", "PM2.5"];
 const LABEL = {"NO2": "NO₂ · mainly traffic exhaust · airways", "PM2.5": "PM2.5 · fine particles · affects heart and blood vessels"};
 const SHORT = {"NO2": "NO₂", "PM2.5": "PM2.5"};
 const COLOUR = {"NO2": "#4c72b0", "PM2.5": "#c8642e"};
-const OTHER = "#8A96A1", REF = "#333333", SELECT = "#2E3B4E", SELECT_TINT = "#E6EAF0", INK = "#15212C", MUTED = "#505357", GRID = "#D9DEE3", BAND = "#EEEEEE";
+const OTHER = "#8A96A1", REF = "#333333", SELECT = "#2E3B4E", SELECT_TINT = "#E6EAF0", INK = "#15212C", MUTED = "#44536A", GRID = "#D9DEE3", BAND = "#EEEEEE";
 // Ordered from lowest to highest value, as they sit on the axis
 const REFS = [["annual_who", "WHO", "who", "1.5 3"], ["annual_eu2030", "EU 2030", "eu2030", "5 3"], ["annual_in_force", "EU now", "now", null]];
 const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -481,13 +486,9 @@ function drawLimits() {
   const months = monthsOf();
   const rows = D.stations.map(s => ({code: s.code, v: Object.fromEntries(POLS.map(p => [p, measures(s.code, p) ? meanOver(s.code, p, months).mean : null]))}))
     .sort((a, b) => (b.v.NO2 ?? -1) - (a.v.NO2 ?? -1));
-  const scale = Object.fromEntries(POLS.map(p => [p, niceMax(rows.map(r => r.v[p]), REFS.map(([k]) => D.limits[p][k])) * 1.25]));
+  const scale = Object.fromEntries(POLS.map(p => [p, Math.max(...rows.map(r => r.v[p] ?? 0), ...REFS.map(([k]) => D.limits[p][k])) * 1.06]));
   const pct = (v, p) => (v / scale[p] * 100).toFixed(1) + "%";
   const head = POLS.map(p => `<th scope="col"><span style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</span></th>`).join("");
-  // Reference names sit directly above their line, one row each so they never overlap
-  const names = POLS.map(p => `<th scope="col" class="refnames"><div class="bar" style="height:44px">` +
-    REFS.map(([k, n, cls], j) => `<i class="ref ${cls}" style="left:${pct(D.limits[p][k], p)};top:${4 + j * 13 + 11}px;bottom:-3px" aria-hidden="true"></i>` +
-      `<span class="refname" style="left:${pct(D.limits[p][k], p)};top:${j * 13}px">${n}</span>`).join("") + `</div></th>`).join("");
   const body = rows.map(r => {
     const on = S.stations.has(r.code);
     const cells = POLS.map(p => {
@@ -502,13 +503,13 @@ function drawLimits() {
     return `<tr class="${on ? "on" : ""}"><th scope="row"><button type="button" class="linkbtn" data-code="${r.code}" aria-pressed="${on}">` +
       `${stationLabel(byCode(r.code))}</button></th>${cells}</tr>`;
   }).join("");
-  const unit = isAnnual() ? "µg/m³, annual mean 2025" : `µg/m³, mean · ${periodName()} · ${daysName()}`;
-  el("g-limits").innerHTML = `<caption>${unit} · sorted by NO₂</caption>` +
-    `<thead><tr><th scope="col" rowspan="2" style="vertical-align:bottom">Station</th>${head}</tr><tr>${names}</tr></thead><tbody>${body}</tbody>`;
-  el("limits-legend").innerHTML = REFS.map(([, n, , dash]) => `<span>${keyLine(dash)}${n}</span>`).join("") +
-    `<span><svg width="14" height="10" aria-hidden="true"><rect width="14" height="10" fill="${OTHER}"/></svg>not selected</span>`;
+  el("g-limits").innerHTML = `<caption>µg/m³ · sorted by NO₂</caption>` +
+    `<colgroup><col style="width:32%"><col style="width:38%"><col style="width:30%"></colgroup>` +
+    `<thead><tr><th scope="col">Station</th>${head}</tr></thead><tbody>${body}</tbody>`;
+  el("limits-legend").innerHTML = REFS.map(([k, n, , dash]) =>
+    `<span>${keyLine(dash)}${n} (NO₂ ${D.limits["NO2"][k]} · PM2.5 ${D.limits["PM2.5"][k]})</span>`).join("");
   el("g-limits").querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
-  el("limits-period").textContent = isAnnual() ? "annual mean 2025" : `${periodName()} · ${daysName()}`;
+  el("limits-period").textContent = isAnnual() ? "· annual mean 2025" : `· ${periodName()} · ${daysName()}`;
 }
 
 // ---------- quick values ----------
@@ -525,26 +526,36 @@ function renderQuick() {
     const when = r => `${+r.t.slice(8, 10)} ${MONTH[+r.t.slice(5, 7) - 1]}, ${r.t.slice(11)}`;
     const cell = r => r ? `<span class="mono">${fmt(r.v)} µg/m³</span><br><span class="small">${when(r)}` +
       `${sel.length > 1 ? " · " + street(byCode(r.c)) : ""}${r.fw ? " · New Year fireworks" : ""}</span>` : `<span class="small">–</span>`;
+    const none = !sel.some(c => measures(c, p));
+    if (none) return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th>` +
+      `<td colspan="2"><span class="small">– (not measured at ${sel.length === 1 ? "this station" : "these stations"})</span></td></tr>`;
     return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th><td>${cell(lo)}</td><td>${cell(hi)}</td></tr>`;
   }).join("");
   el("quick").innerHTML = `<tr><th scope="col"><span class="sr">Pollutant</span></th><th scope="col">Lowest hour</th><th scope="col">Highest hour</th></tr>${rows}`;
+}
+
+// Small station symbol for tags: square traffic, circle background, diamond suburb
+function typeIcon(type) {
+  const shape = type === "traffic" ? '<rect x="2" y="2" width="9" height="9"/>'
+    : type === "suburb" ? '<polygon points="6.5,1 12,6.5 6.5,12 1,6.5"/>' : '<circle cx="6.5" cy="6.5" r="4.5"/>';
+  return `<svg width="13" height="13" aria-hidden="true" fill="none" stroke="#15212C" stroke-width="1.5">${shape}</svg>`;
 }
 
 // ---------- selected station(s) ----------
 function renderStation() {
   const box = el("s-station"), sel = selected();
   if (!sel.length) {
-    box.innerHTML = `<p class="eyebrow">Selected</p><h2>No station selected</h2><p class="small">Click a station on the map or in the limits table, or choose a group.</p>`;
+    box.innerHTML = `<h2>No station selected</h2><p class="small">Click a station on the map or in the limits table, or choose a group.</p>`;
     return;
   }
   if (sel.length > 3) {
-    box.innerHTML = `<p class="eyebrow">Selected</p><h2>${sel.length} stations</h2><ul class="namelist">` +
+    box.innerHTML = `<h2>${sel.length} stations selected</h2><ul class="namelist">` +
       sel.map(c => `<li><button type="button" class="linkbtn" data-code="${c}">${stationLabel(byCode(c))}</button>` +
         `${measures(c, "PM2.5") ? "" : ' <span class="small">· NO₂ only</span>'}</li>`).join("") + "</ul>";
     box.querySelectorAll(".linkbtn").forEach(b => { b.onclick = () => selectOne(b.dataset.code); });
     return;
   }
-  box.innerHTML = `<p class="eyebrow">Selected</p>` + sel.map(c => {
+  box.innerHTML = sel.map(c => {
     const s = byCode(c);
     const rows = POLS.map(p => {
       if (!measures(c, p)) return `<tr><th scope="row">${SHORT[p]}</th><td colspan="4" class="small">not measured here</td></tr>`;
@@ -552,8 +563,13 @@ function renderStation() {
       return `<tr><th scope="row" style="color:${COLOUR[p]};font-weight:700">${SHORT[p]}</th><td class="mono">${fmt(a)}</td>` +
         REFS.map(([k]) => { const up = a > D.limits[p][k]; return `<td class="${up ? "above" : "below"}">${up ? "above" : "below"} ${D.limits[p][k]}</td>`; }).join("") + "</tr>";
     }).join("");
-    return `<h2>${stationLabel(s)}<span class="small" style="font-weight:400">, ${s.type}, ${c}</span></h2>
-      <div class="small">nearest other station ${s.distance_nearest_km ?? "–"} km · measuring height: ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</div>
+    return `<h2>${stationLabel(s)}</h2>
+      <ul class="tags" aria-label="Station facts">
+        <li>${typeIcon(s.type)}${s.type}</li>
+        <li class="mono">${c}</li>
+        <li>nearest station ${s.distance_nearest_km ?? "–"} km</li>
+        <li>measuring height ${s.inlet_height_m != null ? s.inlet_height_m + " m" : "not published"}</li>
+      </ul>
       <table class="vals" style="margin-top:8px"><tr><th scope="col">Pollutant</th><th scope="col">Annual mean 2025, µg/m³</th>` +
       REFS.map(([, n]) => `<th scope="col">${n}</th>`).join("") + `</tr>${rows}</table>`;
   }).join(`<hr style="border:0;border-top:1px solid var(--line);margin:14px 0">`);
@@ -591,10 +607,6 @@ function renderControls() {
     if (n === "All" || n === "None") b.classList.add("quiet");
     gr.appendChild(b);
   });
-  const traffic = D.stations.filter(x => x.type === "traffic").map(x => x.code);
-  const isTraffic = traffic.length === S.stations.size && traffic.every(c => S.stations.has(c));
-  el("group-note").hidden = !isTraffic;
-  el("group-note").textContent = "Traffic stations stand at busy roads on purpose; the network labels them as traffic stations in its data.";
   const sel = selected();
   const who = sel.length === 0 ? "no station" : sel.length === 1 ? stationLabel(byCode(sel[0])) : `${sel.length} stations`;
   el("status").innerHTML = `Showing <b>${periodName()}</b> · <b>${daysName()}</b> · <b>${who}</b>`;
@@ -676,9 +688,7 @@ function renderMap() {
 
 // ---------- notes at the bottom ----------
 function renderNotes() {
-  const sel = selected(), items = [];
-  const missing = sel.filter(c => !measures(c, "PM2.5")).map(c => street(byCode(c)));
-  if (missing.length) items.push(`<b>No PM2.5</b> at ${missing.join(", ")}.`);
+  const items = [];
   items.push(S.view === "hour"
     ? "<b>No limit line by hour.</b> The limits are annual means."
     : "<b>Monthly means</b> are not compared with the annual limits.");
@@ -686,6 +696,7 @@ function renderNotes() {
   if (S.view === "month" || S.month === 3) items.push("<b>March 2025:</b> exceptional high-pressure weather (DWD).");
   items.push("<b>One year only:</b> no trends, no causes.");
   el("care-list").innerHTML = items.map(t => `<li>${t}</li>`).join("");
+  el("no-pm25").textContent = D.stations.filter(x => !x.pm25).map(street).join(", ");
 }
 
 // Give the free space at the bottom of the "When" frame to the chart itself
