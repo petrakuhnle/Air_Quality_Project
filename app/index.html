@@ -10,7 +10,7 @@
 <style>
 :root {
   /* One meaning per colour. Data: blue NO2, orange PM2.5. Interface: slate for frames, selection, links, focus.
-     Context: grey for stations not selected and leader lines. Reference levels: dark grey. */
+     Context: grey for stations not selected and leader lines. Reference levels: dark blue. */
   --canvas: #F3F5F7;
   --surface: #FFFFFF;
   --frame: #2E3B4E;
@@ -26,7 +26,8 @@
   --pm25: #c8642e;         /* 3.9:1, graphics need 3:1 */
   --pm25-tint: #FBEFE7;
   --other: #8A96A1;        /* 3.0:1 */
-  --ref: #333333;
+  --ref: #1D3557;          /* reference levels: dark blue, darker than NO₂ */
+  --outline: #333333;      /* Berlin outline on the map */
   --band: #EEEEEE;
   --mono: "Atkinson Hyperlegible Mono", "IBM Plex Mono", ui-monospace, monospace;
   --edge: clamp(16px, 3.5vw, 48px);
@@ -126,13 +127,14 @@ table.vals th { font-weight: 400; font-size: 13px; color: var(--secondary); }
 
 /* Limits table. Rows have a fixed height; the reference lines are drawn once, as tall as all rows.
    Round dots WHO, long dashes EU 2030, solid EU now, the same in both columns and in the legend. */
-table.limits { --row: 20px; width: 100%; min-width: 460px; border-collapse: collapse; font-size: 13px; line-height: 16px; }
+table.limits { --row: 20px; width: 100%; min-width: 460px; table-layout: fixed; border-collapse: collapse; font-size: 13px; line-height: 16px; }
 table.limits caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 6px; }
 table.limits th, table.limits td { padding: 2px 6px; text-align: left; vertical-align: middle; }
 table.limits thead th { vertical-align: bottom; border-bottom: 1px solid var(--line); }
 table.limits tbody tr { height: var(--row); }
 table.limits tbody th, table.limits td { padding-top: 0; padding-bottom: 0; }
-table.limits .station { width: 1%; white-space: nowrap; background: var(--station-tint); border-right: 3px solid var(--surface); }
+/* Fixed widths: the station column fits the longest name in bold, the two pollutants share the rest equally */
+table.limits .station { width: 12em; white-space: nowrap; background: var(--station-tint); border-right: 3px solid var(--surface); }
 table.limits .no2 { background: var(--no2-tint); border-right: 3px solid var(--surface); }
 table.limits .pm25 { background: var(--pm25-tint); }
 table.limits tbody th { font-weight: 400; color: var(--secondary); }
@@ -176,15 +178,15 @@ td.pm25 .val, td.pm25 .na { background: var(--pm25-tint); }
 .notes li { margin-bottom: 8px; }
 .notes b { color: var(--ink); }
 .notes .fine { margin: 8px 0 0; font-size: 13px; line-height: 18px; color: var(--secondary); }
-table.levels { border-collapse: collapse; font-size: 14px; width: 100%; margin-bottom: 14px; }
-.types li { display: flex; align-items: center; gap: 8px; }
-.types .tag { flex: none; padding: 1px 8px; font-size: 13px; color: var(--select); }
+table.levels { border-collapse: collapse; font-size: 14px; width: 100%; margin-bottom: 22px; }
 table.levels caption { text-align: left; font-size: 13px; color: var(--secondary); padding-bottom: 4px; }
 table.levels th, table.levels td { padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); text-align: left; }
 table.levels thead th { font-weight: 400; font-size: 13px; color: var(--secondary); }
 table.levels td { font-family: var(--mono); font-size: 13px; }
 table.levels .no2 { color: var(--no2); font-weight: 700; }
 table.levels .pm25 { color: var(--pm25); font-weight: 700; }
+.types li { display: flex; align-items: center; gap: 8px; }
+.types .tag { flex: none; padding: 1px 8px; font-size: 13px; }
 footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; }
 .error { max-width: 1680px; margin: 0 auto; padding: 24px var(--edge); font-size: 18px; }
 
@@ -331,9 +333,9 @@ footer { padding: 0 var(--edge) 32px; color: var(--secondary); font-size: 14px; 
       <div class="note-col">
         <h3><span class="dot" aria-hidden="true"></span>Stations</h3>
         <ul class="types">
-          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="9" height="9"/></svg>traffic</span>at busy roads</li>
-          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/></svg>background</span>in the city, away from roads</li>
-          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="6.5,1 12,6.5 6.5,12 1,6.5"/></svg>suburb</span>at the city edge</li>
+          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="currentColor" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="9" height="9"/></svg>traffic</span>at busy roads</li>
+          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="currentColor" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/></svg>background</span>in the city, away from roads</li>
+          <li><span class="tag"><svg width="13" height="13" aria-hidden="true" fill="currentColor" stroke="currentColor" stroke-width="1.5"><polygon points="6.5,1 12,6.5 6.5,12 1,6.5"/></svg>suburb</span>at the city edge</li>
         </ul>
         <p class="fine">Types as labelled by luftdaten.berlin.de. PM2.5 at <span id="n-pm25"></span> stations, not at <span id="no-pm25" lang="de"></span>.</p>
       </div>
@@ -361,8 +363,8 @@ const css = name => getComputedStyle(document.documentElement).getPropertyValue(
 const POLS = ["NO2", "PM2.5"];
 const SHORT = {"NO2": "NO₂", "PM2.5": "PM2.5"};
 const COLOUR = {"NO2": css("--no2"), "PM2.5": css("--pm25")};
-const [OTHER, REF, SELECT, SELECT_TINT, INK, MUTED, GRID, BAND, SURFACE, CANVAS] =
-  ["--other", "--ref", "--select", "--select-tint", "--ink", "--secondary", "--line", "--band", "--surface", "--canvas"].map(css);
+const [OTHER, REF, OUTLINE, SELECT, SELECT_TINT, INK, MUTED, GRID, BAND, SURFACE, CANVAS] =
+  ["--other", "--ref", "--outline", "--select", "--select-tint", "--ink", "--secondary", "--line", "--band", "--surface", "--canvas"].map(css);
 // Lowest to highest, as they sit on the axis: [key in data, name, class, legend line]. Dots, dashes, solid.
 const REFS = [["annual_who", "WHO", "who", 'stroke-width="3" stroke-dasharray="0 6" stroke-linecap="round"'],
               ["annual_eu2030", "EU 2030", "eu2030", 'stroke-width="2" stroke-dasharray="6 4"'],
@@ -679,7 +681,7 @@ function renderMap() {
   const X = lng => mx0 + (lng - minLo) * k * sc + (mw - sx * sc) / 2;
   const Y = lat => 15 + (maxLa - lat) * sc + (mh - sy * sc) / 2;
   (D.boundary || []).forEach(r => svgEl("path", {d: "M" + r.map(p => `${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join("L") + "Z",
-    fill: CANVAS, stroke: REF, "stroke-width": 1, "aria-hidden": "true"}, svg));
+    fill: CANVAS, stroke: OUTLINE, "stroke-width": 1, "aria-hidden": "true"}, svg));
 
   const lines = svgEl("g", {"aria-hidden": "true"}, svg);
   const marks = svgEl("g", {"aria-hidden": "true"}, svg);
