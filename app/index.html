@@ -594,7 +594,7 @@ function renderQuick() {
     codes.forEach(c => monthsOf().forEach(mm => daytypes().forEach(dt => {
       const e = (D.extremes[c][p][mm] || {})[dt];
       if (!e) return;
-      if (!lo || e.min[0] < lo.v) lo = {v: e.min[0], t: e.min[1], fw: e.min[2], c};
+      if (!lo || e.min[0] < lo.v) lo = {v: e.min[0], t: e.min[1], fw: false, c};
       if (!hi || e.max[0] > hi.v) hi = {v: e.max[0], t: e.max[1], fw: e.max[2], c};
     })));
     return `<tr>${head}<td>${cell(lo)}</td><td>${cell(hi)}</td></tr>`;
