@@ -61,7 +61,7 @@ WHO, EU 2030 and EU limits in force in 2025.
 - Estimating a station from the others misses NO₂ by 7.1 µg/m³ on average, close to the 10 µg/m³
   gap between the WHO level and the EU 2030 limit. PM2.5: 1.6 µg/m³
 - The city model (FAirQ 2025) reads high: +2.9 µg/m³ NO₂, +1.0 PM2.5. NO₂ is above the measurement
-  at 14 of 15 stations and
+  at 14 of 15 stations.
 
 ## Data
 
@@ -166,7 +166,7 @@ from 2030 · [Directive (EU) 2024/2881, Annex I](https://eur-lex.europa.eu/eli/d
 
 ## Dashboard
 
-[Berliner Luft · Data 2025](https://huggingface.co/spaces/petrakuhnle/berliner-luft), a static Hugging Face Space.
+[Berliner Luft · Data 2025](https://petrakuhnle.github.io/Air_Quality_Project/app/)
 
 - **Select:** one station, a station type or all, on the map or in the limits table · one month or the
   full year · all days, Mon–Fri or Sat–Sun
